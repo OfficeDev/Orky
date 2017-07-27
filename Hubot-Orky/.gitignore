@@ -1,0 +1,17 @@
+/node_modules
+.idea/
+test/*.xml
+coffee-lint.xml
+js-lint.xml
+*.log
+certs/
+.hubot_history
+/scripts/*.coffee
+/scripts/*.js
+/scripts/*.es6
+/scripts/*.es7
+/slack-app.json
+/slack_app_db
+/config/slack_app_db
+/config/slack-app.json
+/dist

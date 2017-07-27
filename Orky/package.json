@@ -1,0 +1,31 @@
+{
+  "name": "orky",
+  "version": "0.1.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "7.7.4",
+    "npm": "4.1.2"
+    },
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^8.0.16",
+    "@types/restify": "^5.0.1",
+    "@types/socket.io": "^1.4.29",
+    "@types/uuid": "^3.4.0",
+    "botbuilder": "^3.8.4",
+    "botbuilder-teams": "^0.1.2",
+    "crypto": "0.0.3",
+    "restify": "^5.0.1",
+    "socket.io": "^2.0.3",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^2.4.2"
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "unmatched_response" : "I did not understand your command.",
+  "cannot_extract_bot_name": "I couldn't extract the name of your bot."
+}
