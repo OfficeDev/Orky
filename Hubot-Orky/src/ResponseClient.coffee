@@ -1,6 +1,13 @@
-class ResponseClient
-  constructor: (@robot) ->
+urlJoin = require('url-join')
 
+class ResponseClient
+  constructor: (@robot, options) ->
+    @batch = []
+    @options =
+      autoBatchDelay: 250
+    if typeof options?.autoBatchDelay != 'number'
+      @options.autoBatchDelay = 250
+  ###
   # Gets the members of the given conversation.
   # Parameters:
   #      chatConnector: Chat connector instance.
@@ -36,33 +43,110 @@ class ResponseClient
       .then((response) ->
         return createAddressFromResponse(address, response)
       )
+  ###
 
+  postMessage: (message, token, reply) ->
+    if message?
+      envelope =
+        message: message
+        token: token,
+        reply: reply
+      @batch.push(envelope)
+      @startBatch()
 
-  # Starts a new reply chain by posting a message to a channel.
-  # Parameters:
-  #      chatConnector: Chat connector instance.
-  #      message: The message to post. The address in this message is ignored, and the message is posted to the specified channel.
-  #      channelId: Id of the channel to post the message to.
-  # Returns: A copy of "message.address", with the "conversation" property referring to the new reply chain.
-  startReplyChain: (token, message, channelId) ->
-    # Build request
-    options =
-      method: "POST"
-      url: "#{message.address.serviceUrl}v3/conversations"
-      body:
-        isGroup: true
-        activity: message
-        channelData:
-          teamsChannelId: channelId.split(";")[0]
+  postMessages: (messages, token, reply) ->
+    if not messages?
+      return
+    
+    list = messages
+    if (!Array.isArray(messages))
+      list = [messages]
 
-    return sendRequest(@robot, token, options)
-      .then((response) ->
-        address = createAddressFromResponse(message.address, response)
-        if address.user
-          delete address.user
-        if address.correlationId
-          delete address.correlationId
-        return address
+    for message in list
+      envelope =
+        message: message
+        token: token,
+        reply: reply
+      @batch.push(envelope)
+    @startBatch()
+
+  startBatch: () ->
+    @batchStarted = true
+    if (!@sendingBatch)
+      if (@batchTimer)
+        clearTimeout(@batchTimer)
+      @batchTimer = setTimeout(() =>
+        @sendBatch()
+      , @options.autoBatchDelay)
+
+  sendBatch: () ->
+    if (@sendingBatch)
+      @batchStarted = true
+      return
+    if (@batchTimer)
+      clearTimeout(@batchTimer)
+      @batchTimer = null
+    @batchTimer = null
+    batch = @batch
+    @batch = []
+    @batchStarted = false
+    @sendingBatch = true
+
+    if batch.length > 0
+      token = batch[0].token
+      sendFuncs = batch.map((item, index) =>
+        message = item.message
+        reply = item.reply
+        if message?.address?.serviceUrl?
+          return () =>
+            send(@robot, message, reply, token, (index == batch.length - 1))
+              .catch((error) =>
+                @robot.logger.error(error)
+              )
+        else
+          return () =>
+            @robot.logger.error('Message is missing address or serviceUrl.')
+            return Promise.resolve()
+      )
+
+      promiseInSeries(sendFuncs)
+        .then(() =>
+          @sendingBatch = false
+          if (@batchStarted)
+            @startBatch()
+        )
+        .catch((error) =>
+          @robot.logger.error(error)
+        )
+
+  send = (robot, message, reply, token, lastMessage) ->
+    if not message?
+      return Promise.resolve()
+
+    address = message.address
+    return prepOutgoingMessage(message, lastMessage)
+      .then((message) ->
+        conversationId = address.conversation.id
+        if not reply
+          conversationId = conversationId.split(';')[0]
+        conversationId = encodeURIComponent(conversationId)
+        addressId = encodeURIComponent(address.id)
+        path = "/v3/conversations/#{conversationId}/activities/#{addressId}"
+
+        options =
+          method: 'POST',
+          # We use urlJoin to concatenate urls. url.resolve should not be used
+          # here, since it resolves urls as hrefs are resolved, which could
+          # result in losing the last fragment of the serviceUrl.
+          url: urlJoin(address.serviceUrl, path),
+          body: message,
+          json: true,
+          headers:
+            'User-Agent': 'Orky/1.0'
+
+        robot.logger.debug("Sending Request=#{JSON.stringify(options, null, 2)}")
+
+        return sendRequest(robot, token, options)
       )
 
   # Send an authenticated request
@@ -73,23 +157,26 @@ class ResponseClient
         .header("Authorization", "Bearer #{token}")
         .header('Content-Type', 'application/json')
 
-      if options.method == 'POST'
-        console.log(JSON.stringify(options.body))
-        request = request.post(JSON.stringify(options.body))
-      else
-        request = request.get()
+      switch options.method
+        when 'POST'
+          request = request.post(JSON.stringify(options.body))
+        when 'GET'
+          request = request.get()
+        else
+          return reject("Method '#{options.method}' not supported")
 
       request((error, response, body) ->
         if error?
           return reject(error)
 
         if response.statusCode >= 400
-          console.log(body)
           txt = "Request to '#{options.url}' failed: [#{response.statusCode}] #{response.statusMessage}"
           return reject(new Error(txt))
 
         try
-          if typeof body == 'string'
+          contentType = response?.headers?['content-type']?.toLowerCase()
+          contentLength = parseInt(response?.headers?['content-length'], 10) || 0
+          if contentLength > 0 && contentType? && contentType.startsWith('application/json')
             body = JSON.parse(body)
           resolve(body)
         catch error
@@ -98,39 +185,46 @@ class ResponseClient
           reject(error)
       ))
 
-  # Create a copy of address with the data from the response
-  createAddressFromResponse = (address, response) ->
-    result = clone(address)
-    result.conversation =
-      id: response.id
-    result.useAuth = true
+  prepOutgoingMessage = (message, lastMessage) ->
+    return new Promise((resolve, reject) ->
+      if not message?
+        reject("Argument 'message' is undefined.")
 
-    if result.id?
-      delete result.id
-    if response.activityId?
-      result.id = response.activityId
-    return result
+      # Patch message fields
+      message.locale = message.textLocale
+      message.channelData = message.sourceEvent
+      message.from = message?.address?.bot
+      message.recipient = message?.address?.user
+      delete message.address
+      delete message.textLocale
+      delete message.sourceEvent
+      delete message.agent
+      delete message.source
 
-  clone = (obj) ->
-    if not obj? or typeof obj isnt 'object'
-      return obj
+      # Patch inputHint
+      if message.type == 'message' && not message?.inputHint?
+        message.inputHint = lastMessage ? 'acceptingInput' : 'ignoringInput'
 
-    if obj instanceof Date
-      return new Date(obj.getTime())
+      # Ensure local timestamp
+      if not message.localTimestamp?
+        message.localTimestamp = new Date().toISOString()
 
-    if obj instanceof RegExp
-      flags = ''
-      flags += 'g' if obj.global?
-      flags += 'i' if obj.ignoreCase?
-      flags += 'm' if obj.multiline?
-      flags += 'y' if obj.sticky?
-      return new RegExp(obj.source, flags)
+      resolve(message)
+    )
 
-    newInstance = new obj.constructor()
+  promiseInSeries = (providers) ->
+    ret = Promise.resolve(null)
+    results = []
 
-    for key of obj
-      newInstance[key] = clone obj[key]
-
-    return newInstance
+    return providers.reduce(
+      (result, provider, index) ->
+        return result.then(() ->
+          return provider().then((val) ->
+            results[index] = val
+          )
+        )
+      , ret).then(() ->
+        return results
+      )
 
 module.exports = ResponseClient

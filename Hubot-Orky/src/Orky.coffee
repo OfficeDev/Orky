@@ -1,4 +1,5 @@
 SocketIO = require 'socket.io-client'
+BotBuilder = require 'botbuilder'
 try
   {Robot,Adapter,TextMessage,User} = require 'hubot'
 catch
@@ -19,22 +20,32 @@ class Orky extends Adapter
 
   send: (envelope, strings...) ->
     @robot.logger.info "Send"
-    message =
-      type: "message"
-      address: envelope.room
-      text: strings.join("<br/>")
+    messages = strings.map((string) ->
+      message = string
+      if typeof string == 'string'
+        message =
+          type: "message"
+          address: envelope.message.address
+          text: string.replace(/(?:\r\n|\r|\n)/g, '<br/>')
+    )
+
     @responseClient
-      .startReplyChain(envelope.message.token, message, envelope.room.conversation.id)
+      .postMessages(messages, envelope.message.token, false)
 
   reply: (envelope, strings...) ->
     @robot.logger.info "Reply"
-    message =
-      type: "message"
-      address: envelope.room
-      text: strings.join("<br/>")
+
+    messages = strings.map((string) ->
+      message = string
+      if typeof string == 'string'
+        message =
+          type: "message"
+          address: envelope.message.address
+          text: string.replace(/(?:\r\n|\r|\n)/g, '<br/>')
+    )
 
     @responseClient
-      .startReplyChain(envelope.message.token, message, envelope.room.conversation.id)
+      .postMessages(messages, envelope.message.token, true)
 
   run: ->
     @robot.logger.info "Run"
@@ -43,39 +54,34 @@ class Orky extends Adapter
     @client = SocketIO(@orkyUri)
     @client.on('connect', () =>
       @robot.logger.info("Connected to Orky")
+      @client.emit('register',
+        id: @botId,
+        secret: @botSecret)
     )
 
-    @client.on('hello', (data) =>
-      @robot.logger.debug("Received 'hello' from Orky")
-      @client.emit("good day", @botId)
-    )
-
-    @client.on('goodbye', () =>
-      @robot.logger.debug("Received 'goodbye' from Orky")
+    @client.once('no_registration', () =>
+      @robot.logger.info("Orky could not find our registration.")
       process.exit(1)
     )
 
-    @client.on('how are you', (data) =>
-      @robot.logger.debug("Received 'how are you' from Orky")
-      if data == @botSecret
-        @authenticated = true
-        @client.emit('great')
-        @emit "connected"
-      else
-        @client.emit('goodbye')
-        @robot.logger.error("Orky did not return our secret.")
-        process.exit(1)
+    @client.once('disconnect', () =>
+      @robot.logger.info("Orky disconnected us.")
+      process.exit(1)
     )
 
-    @client.on('message', (data) =>
-      if @authenticated
-        data.user.room = data.address
-        message = new TextMessage(data.user, data.text, data.address.id)
-        message.token = data.token
-        @robot.logger.debug("Received 'message' from Orky")
-        @robot.logger.debug("data=#{JSON.stringify(data, null, 2)}")
-        @robot.logger.debug("message=#{JSON.stringify(message, null, 2)}")
-        @robot.receive message
+    @client.on('registration_data', (data) =>
+      @robot.logger.info("Orky updated our registration data. We have a new name! '#{data.name}'")
+      @robot.name = data.name
+      @emit('connected')
+    )
+
+    @client.on('post_message', (data) =>
+      data.text = "#{@robot.name} #{data.text}"
+      data.user.room = data.address.conversation.id
+      message = new TextMessage(data.user, data.text, data.address.id)
+      message.token = data.token
+      message.address = data.address
+      @robot.receive message
     )
 
 exports.use = (robot) ->

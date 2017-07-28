@@ -64,7 +64,7 @@ export class Orky {
     })
     
     const botRepository = new BotMemoryRepository();
-    const botService = new BotService(botRepository);
+    const botService = new BotService(botRepository, this._logger);
     Dialogs.use(this._bot, this._logger, botService);
 
     this._server = restify.createServer({
