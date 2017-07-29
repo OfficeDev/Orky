@@ -1,5 +1,4 @@
 SocketIO = require 'socket.io-client'
-BotBuilder = require 'botbuilder'
 try
   {Robot,Adapter,TextMessage,User} = require 'hubot'
 catch
@@ -17,35 +16,6 @@ class Orky extends Adapter
     @botSecret = process.env.BOT_SECRET
 
     @robot.logger.info "Constructor"
-
-  send: (envelope, strings...) ->
-    @robot.logger.info "Send"
-    messages = strings.map((string) ->
-      message = string
-      if typeof string == 'string'
-        message =
-          type: "message"
-          address: envelope.message.address
-          text: string.replace(/(?:\r\n|\r|\n)/g, '<br/>')
-    )
-
-    @responseClient
-      .postMessages(messages, envelope.message.token, false)
-
-  reply: (envelope, strings...) ->
-    @robot.logger.info "Reply"
-
-    messages = strings.map((string) ->
-      message = string
-      if typeof string == 'string'
-        message =
-          type: "message"
-          address: envelope.message.address
-          text: string.replace(/(?:\r\n|\r|\n)/g, '<br/>')
-    )
-
-    @responseClient
-      .postMessages(messages, envelope.message.token, true)
 
   run: ->
     @robot.logger.info "Run"
@@ -70,19 +40,33 @@ class Orky extends Adapter
     )
 
     @client.on('registration_data', (data) =>
-      @robot.logger.info("Orky updated our registration data. We have a new name! '#{data.name}'")
+      @robot.logger.info("We have a new name! '#{data.name}'")
       @robot.name = data.name
       @emit('connected')
     )
 
     @client.on('post_message', (data) =>
-      data.text = "#{@robot.name} #{data.text}"
-      data.user.room = data.address.conversation.id
-      message = new TextMessage(data.user, data.text, data.address.id)
-      message.token = data.token
-      message.address = data.address
+      text = "#{@robot.name} #{data?.text}"
+      user = data?.user
+      if user?
+        user.room = data?.address?.conversation?.id
+      address = data?.address
+      token = data?.token
+
+      message = new TextMessage(user, text, address?.id)
+      message.token = token
+      message.address = address
+
       @robot.receive message
     )
+
+  send: (context, strings...) ->
+    @robot.logger.info "Send"
+    @responseClient.postMessages(strings..., context, false)
+
+  reply: (context, strings...) ->
+    @robot.logger.info "Reply"
+    @responseClient.postMessages(strings..., context, true)
 
 exports.use = (robot) ->
   new Orky robot

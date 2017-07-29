@@ -30,7 +30,7 @@ export class BotMemoryRepository implements IBotRepository {
       teamMap = {};
       this._botsByTeamAndName[bot.teamId] = teamMap;
     }
-    teamMap[bot.name] = bot;
+    teamMap[bot.name.toLowerCase()] = bot;
 
     return bot;
   }
@@ -52,7 +52,7 @@ export class BotMemoryRepository implements IBotRepository {
       .then((bot) => {
         if (bot) {
           delete this._botsById[bot.id];
-          delete this._botsByTeamAndName[bot.teamId][bot.name];
+          delete this._botsByTeamAndName[bot.teamId][bot.name.toLowerCase()];
         }
         return bot;
       });
@@ -75,7 +75,7 @@ export class BotMemoryRepository implements IBotRepository {
     }
 
     if (this._botsByTeamAndName[teamId]) {
-      return this._botsByTeamAndName[teamId][botName];
+      return this._botsByTeamAndName[teamId][botName.toLowerCase()];
     }
 
     return undefined;

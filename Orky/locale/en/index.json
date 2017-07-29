@@ -1,4 +1,13 @@
 {
-  "unmatched_response" : "I did not understand your command.",
-  "cannot_extract_bot_name": "I couldn't extract the name of your bot."
+  "unmatched_response" : "I support the following commands:<br/><b>add [name]</b> - Adds a bot with the given name. The name can only contain alphanumeric characters (a-z, A-Z and 0-9).<br/><b>remove [name]</b> - Removes a bot with the given name.<br/><b>enable [name]</b> - Enables a bot.<br/><b>disable [name]</b> - Disables a bot.<br/><b>status</b> - Shows the status of your bots.<br/><b>tell [name] [command]</b> - Tells a bot to execute a command.",
+  "cannot_extract_bot_name": "I couldn't determine the name of your bot from your message.",
+  "cannot_extract_team_id": "I couldn't determine the team id that you are currently in.",
+  "no_bots": "You don't have any bots!",
+  "bot_not_found": "You don't have a bot named %s",
+  "bot_removed": "I removed your bot named %s.",
+  "bot_disabled": "I disabled your bot named %s.",
+  "bot_enabled": "I enabled your bot named %s.",
+  "bot_registered_title": "Say hello to %s!",
+  "bot_avatar_alt_text": "Bot Avatar",
+  "bot_not_registered": "I couldn't register a bot named %s."
 }

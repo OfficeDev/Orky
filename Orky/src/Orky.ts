@@ -65,14 +65,16 @@ export class Orky {
     
     const botRepository = new BotMemoryRepository();
     const botService = new BotService(botRepository, this._logger);
-    Dialogs.use(this._bot, this._logger, botService);
+    Dialogs.use(this._bot, this._config.ServerHost, this._logger, botService);
 
     this._server = restify.createServer({
       name: this._config.Name,
       version: this._config.Version
     });
     this._server.post(this._config.MessagesEndpoint, this._connector.listen());
-
+    this._server.get(/\/content\/?.*/, restify.plugins.serveStatic({
+      directory: __dirname + "/../"
+    }));
     const io = SocketIO.listen((this._server as any).server);
     this._server.listen(this._config.ServerPort, () => {
       this._logger.info(`${this._server.name} listening to ${this._server.url}`); 

@@ -3,6 +3,7 @@ export default interface Config {
   Version: string;
   MicrosoftAppId: string;
   MicrosoftAppPassword: string;
+  ServerHost: string;
   ServerPort: string;
   MessagesEndpoint: string;
   DefaultLocale: string;

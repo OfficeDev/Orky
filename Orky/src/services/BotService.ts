@@ -64,11 +64,12 @@ class BotConnection extends EventEmitter {
     message = {
       text: message.text,
       type: message.type,
-      timestamp: message.timestampe,
+      timestamp: message.timestamp,
       localTimestamp: message.localTimestamp,
       address: message.address,
       user: message.user,
-      token: message.token
+      token: message.token,
+      sourceEvent: message.sourceEvent
     };
 
     this._socket.emit('post_message', message);
@@ -137,14 +138,43 @@ export default class BotService {
       });
   }
 
+  async enableBotWithName(teamId: string, botName: string): Promise<Bot|undefined> {
+    return this._botRepository
+      .findByTeamAndName(teamId, botName)
+      .then((bot) => {
+        if (!bot) {
+          return Promise.resolve(undefined);
+        }
+
+        bot.disabled = false;
+        return Promise.resolve(bot);
+      });
+  }
+
+  async disableBotWithName(teamId: string, botName: string): Promise<Bot|undefined> {
+    return this._botRepository
+      .findByTeamAndName(teamId, botName)
+      .then((bot) => {
+        if (!bot) {
+          return Promise.resolve(undefined);
+        }
+
+        bot.disabled = true;
+        return Promise.resolve(bot);
+      });
+  }
+
   async getBotStatuses(teamId: string): Promise<BotStatus[]> {
     return this._botRepository.getAllByTeam(teamId)
       .then((bots) => {
         const statuses = new Array<BotStatus>();
         bots.forEach((bot) => {
-          let status = "disconnected";
-          if (this._botConnections[bot.id]) {
-            status = "connected";
+          let status = "off";
+          if (bot.disabled) {
+            status = "disabled";
+          }
+          else if (this._botConnections[bot.id]) {
+            status = "on";
           }
           statuses.push(new BotStatus(bot, status));
         });
@@ -161,6 +191,10 @@ export default class BotService {
 
         const connection = this._botConnections[bot.id];
         if (!connection) {
+          return undefined;
+        }
+
+        if (bot.disabled) {
           return undefined;
         }
 
