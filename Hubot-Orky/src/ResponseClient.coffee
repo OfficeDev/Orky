@@ -8,43 +8,6 @@ class ResponseClient
       autoBatchDelay: 250
     if typeof options?.autoBatchDelay != 'number'
       @options.autoBatchDelay = 250
-  ###
-  # Gets the members of the given conversation.
-  # Parameters:
-  #      chatConnector: Chat connector instance.
-  #      address: Chat connector address. "serviceUrl" property is required.
-  #      conversationId: [optional] Conversation whose members are to be retrieved, if not specified, the id is taken from address.conversation.
-  # Returns: A list of conversation members.
-  getConversationMembers: (token, address, conversationId) ->
-    # Build request
-    conversationId = conversationId || address.conversation.id
-    options =
-      method: "GET"
-      url: "#{address.serviceUrl}/v3/conversations/#{conversationId}/members"
-
-    return sendRequest(@robot, token, options)
-
-  # Starts a 1:1 chat with the given user.
-  # Parameters:
-  #      chatConnector: Chat connector instance.
-  #      address: Chat connector address. "bot", "user" and "serviceUrl" properties are required.
-  #      channelData: Channel data object. "tenant" property is required.
-  # Returns: A copy of "address", with the "conversation" property referring to the 1:1 chat with the user.
-  startConversation: (token, address, channelData) ->
-    # Build request
-    options =
-      method: "POST"
-      url: "#{address.serviceUrl}/v3/conversations"
-      body:
-        bot: address.bot,
-        members: [address.user],
-        channelData: channelData,
-
-    return sendRequest(@robot, token, options)
-      .then((response) ->
-        return createAddressFromResponse(address, response)
-      )
-  ###
 
   postMessage: (message, context, reply) ->
     if message?
@@ -214,7 +177,6 @@ class ResponseClient
     return new Promise((resolve, reject) ->
       request = robot.http(message).get()
       request((error, response, body) ->
-        console.log("RESPONSE: #{JSON.stringify(response.headers)}")
         if error?
           return resolve(null)
         

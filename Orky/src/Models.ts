@@ -6,7 +6,6 @@ export class Bot {
   readonly name: string;
   readonly secret: string;
   disabled: boolean;
-  readonly number: number;
 
   constructor(teamId: string, id: string, name: string, secret: string) {
     if (!teamId) {
@@ -27,7 +26,10 @@ export class Bot {
     this.name = name;
     this.secret = secret;
     this.disabled = false;
-    this.number = Math.floor(Math.random() * 4) + 1;
+  }
+
+  thumbnailImageUri(): string {
+    return `https://robohash.org/${this.id}?size=56x56`
   }
 }
 

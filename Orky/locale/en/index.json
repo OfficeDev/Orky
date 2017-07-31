@@ -4,10 +4,14 @@
   "cannot_extract_team_id": "I couldn't determine the team id that you are currently in.",
   "no_bots": "You don't have any bots!",
   "bot_not_found": "You don't have a bot named %s",
-  "bot_removed": "I removed your bot named %s.",
-  "bot_disabled": "I disabled your bot named %s.",
-  "bot_enabled": "I enabled your bot named %s.",
+  "bot_disabled_title": "Starting to ignore %s now!",
+  "bot_disabled_text" : "Nananana, I can't hear you!",
+  "bot_enabled_title": "%s is back in the room!",
+  "bot_enabled_text" : "aaaaaand... I'm back!",
+  "bot_deregistered_title": "Say good bye to %s!",
+  "bot_deregistered_text" : "Good bye! =(",
   "bot_registered_title": "Say hello to %s!",
+  "bot_registered_text" : "Id <b>%s</b><br/>Secret <b>%s</b>",
   "bot_avatar_alt_text": "Bot Avatar",
   "bot_not_registered": "I couldn't register a bot named %s."
 }

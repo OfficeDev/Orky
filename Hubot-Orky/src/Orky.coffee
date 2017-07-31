@@ -19,10 +19,15 @@ class Orky extends Adapter
 
   run: ->
     @robot.logger.info "Run"
+    @connect()
 
-    @authenticated = false
+  connect: () ->
+    if @client?
+      @client.destroy()
+      @client = null
+    
     @client = SocketIO(@orkyUri)
-    @client.on('connect', () =>
+    @client.once('connect', () =>
       @robot.logger.info("Connected to Orky")
       @client.emit('register',
         id: @botId,
@@ -31,12 +36,12 @@ class Orky extends Adapter
 
     @client.once('no_registration', () =>
       @robot.logger.info("Orky could not find our registration.")
-      process.exit(1)
+      @client.disconnect()
     )
 
     @client.once('disconnect', () =>
       @robot.logger.info("Orky disconnected us.")
-      process.exit(1)
+      @connect()
     )
 
     @client.on('registration_data', (data) =>
@@ -59,7 +64,6 @@ class Orky extends Adapter
 
       @robot.receive message
     )
-
   send: (context, strings...) ->
     @robot.logger.info "Send"
     @responseClient.postMessages(strings..., context, false)

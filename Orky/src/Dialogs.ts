@@ -1,4 +1,4 @@
-import {UniversalBot, Session, Message, ThumbnailCard, CardImage, AttachmentLayout} from "botbuilder";
+import {UniversalBot, Session, Message, ThumbnailCard, HeroCard, CardImage, AttachmentLayout} from "botbuilder";
 import {ILogger} from './Logger';
 import {ArgumentNullException, InvalidOperationException} from './Errors'
 import BotService from "./services/BotService";
@@ -61,7 +61,17 @@ class Dialogs {
     }
 
     this._logger.info(`Removed bot named '${bot.name}' from team '${bot.teamId}'`);
-    session.send("bot_removed", bot.name);
+
+    const botCard = new ThumbnailCard(session)
+      .title("bot_deregistered_title", bot.name)
+      .text("bot_deregistered_text")
+      .images([
+        new CardImage(session)
+          .url(`${bot.thumbnailImageUri()}`)
+          .alt("bot_avatar_alt_text")
+      ]);
+    const message = new Message(session).addAttachment(botCard);
+    session.send(message);
   }
 
   async add(session: Session, args?: any): Promise<void> {
@@ -92,10 +102,10 @@ class Dialogs {
 
     const botCard = new ThumbnailCard(session)
       .title("bot_registered_title", bot.name)
-      .text(`Id <b>${bot.id}</b><br/>Secret <b>${bot.secret}</b>`)
+      .text("bot_registered_text", bot.id, bot.secret)
       .images([
         new CardImage(session)
-          .url(`${this._serverHost}/content/robot${bot.number}.png`)
+          .url(`${bot.thumbnailImageUri()}`)
           .alt("bot_avatar_alt_text")
       ]);
     const message = new Message(session).addAttachment(botCard);
@@ -127,8 +137,19 @@ class Dialogs {
       return;
     }
 
-    this._logger.info(`Removed bot named '${bot.name}' from team '${bot.teamId}'`);
-    session.send("bot_disabled", bot.name);
+    this._logger.info(`Disabled bot named '${bot.name}' in team '${bot.teamId}'`);
+
+    const botCard = new ThumbnailCard(session)
+      .title("bot_disabled_title", bot.name)
+      .text("bot_disabled_text")
+      .images([
+        new CardImage(session)
+          .url(`${bot.thumbnailImageUri()}`)
+          .alt("bot_avatar_alt_text")
+      ]);
+
+    const message = new Message(session).addAttachment(botCard);
+    session.send(message);
   }
 
   
@@ -157,8 +178,19 @@ class Dialogs {
       return;
     }
 
-    this._logger.info(`Removed bot named '${bot.name}' from team '${bot.teamId}'`);
-    session.send("bot_enabled", bot.name);
+    this._logger.info(`Enabled bot named '${bot.name}' in team '${bot.teamId}'`);
+    
+    const botCard = new ThumbnailCard(session)
+      .title("bot_enabled_title", bot.name)
+      .text("bot_enabled_text")
+      .images([
+        new CardImage(session)
+          .url(`${bot.thumbnailImageUri()}`)
+          .alt("bot_avatar_alt_text")
+      ]);
+
+    const message = new Message(session).addAttachment(botCard);
+    session.send(message);
   }
 
   async status(session: Session, args?: any): Promise<void> {
@@ -186,7 +218,7 @@ class Dialogs {
         .text(`Id <b>${bot.id}</b><br/>Secret <b>${bot.secret}</b>`)
         .images([
           new CardImage(session)
-            .url(`${this._serverHost}/content/robot${bot.number}.png`)
+            .url(`${bot.thumbnailImageUri()}`)
             .alt("bot_avatar_alt_text")
         ]);
     })
