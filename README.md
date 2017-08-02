@@ -12,7 +12,7 @@ The most popular script executor for Orky is [Hubot](https://hubot.github.com/) 
 
 2. Follow the guide [here](https://msdn.microsoft.com/en-us/microsoft-teams/sideload)
 
-You should not be able to talk to Orky and add your own bots.
+You should now be able to talk to Orky and add your own bots.
 
 ## How to add your own bot?
 This guide can help you add your own bot using the [Hubot](https://hubot.github.com/) framework.
