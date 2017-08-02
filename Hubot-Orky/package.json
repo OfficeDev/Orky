@@ -1,6 +1,6 @@
 {
   "name": "hubot-orky",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Hubot adapter for orky",
   "main": "src/Orky.coffee",
   "scripts": {

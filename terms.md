@@ -29,11 +29,11 @@ The materials appearing on Orky's website could include technical, typographical
 
 6. Links
 
-Matt Stankiewicz has not reviewed all of the sites linked to its website and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by Orky of the site. Use of any such linked website is at the user's own risk.
+Orky has not reviewed all of the sites linked to its website and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by Orky of the site. Use of any such linked website is at the user's own risk.
 
 7. Modifications
 
-Matt Stankiewicz may revise these terms of service for its website at any time without notice. By using this website you are agreeing to be bound by the then current version of these terms of service.
+Orky may revise these terms of service for its website at any time without notice. By using this website you are agreeing to be bound by the then current version of these terms of service.
 
 8. Governing Law
 
