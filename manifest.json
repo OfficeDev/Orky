@@ -1,0 +1,35 @@
+{
+    "manifestVersion": "1.0",
+    "version": "1.0",
+    "id": "bbecaeee-a3b9-4ef3-91ab-7bb795977c8b",
+    "packageName": "mattsft.orky",
+    "developer": {
+        "name": "Matt Stankiewicz",
+        "websiteUrl": "https://github.com/MattSFT/Orky",
+        "privacyUrl": "https://github.com/MattSFT/Orky/blob/master/privacy.md",
+        "termsOfUseUrl": "https://github.com/MattSFT/Orky/blob/master/terms.md"
+    },
+    "name": {
+        "short": "Orky",
+        "full": "Orky - The Orchestrator"
+    },
+    "description": {
+        "short": "You can use Orky to execute scripts!",
+        "full": "You can use Orky to register your own local bot in Microsoft Teams and store + execute scripts from ANYWHERE!"
+    },
+    "icons": {
+        "outline": "outlineicon.png",
+        "color": "coloricon.png"
+    },
+    "accentColor": "#0DFFA0",
+    "bots": [
+        {
+            "botId": "bbecaeee-a3b9-4ef3-91ab-7bb795977c8b",
+            "isNotificationOnly": false,
+            "scopes": [
+                "team",
+                "personal"
+            ]
+        }
+    ]
+}
