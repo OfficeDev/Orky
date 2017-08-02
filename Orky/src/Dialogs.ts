@@ -13,21 +13,16 @@ class Dialogs {
 
   private _logger: ILogger;
   private _botService: BotService;
-  private _serverHost: string;
 
-  constructor(logger: ILogger, serverHost: string, botService: BotService) {
+  constructor(logger: ILogger, botService: BotService) {
     if (!logger) {
       throw new ArgumentNullException("logger");
     }
     if (!botService) {
       throw new ArgumentNullException("botService");
     }
-    if (!serverHost) {
-      throw new ArgumentNullException("serverHost");
-    }
     this._logger = logger;
     this._botService = botService;
-    this._serverHost = serverHost;
   }
 
   root(session: Session, args?: any): void {
@@ -290,8 +285,8 @@ class Dialogs {
 }
 
 export default {
-  use(bot: UniversalBot, serverHost: string, logger: ILogger, botService: BotService) : void {
-    const dialogs = new Dialogs(logger, serverHost, botService);
+  use(bot: UniversalBot, logger: ILogger, botService: BotService) : void {
+    const dialogs = new Dialogs(logger, botService);
     bot.dialog('/',
       (session, args) => dialogs.root(session, args));
     bot.dialog("/add",

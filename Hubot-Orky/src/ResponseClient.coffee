@@ -131,12 +131,13 @@ class ResponseClient
         else
           return reject("Method '#{options.method}' not supported")
 
+      robot.logger.debug("Sending message=#{JSON.stringify(options, null, 2)}")
       request((error, response, body) ->
         if error?
           return reject(error)
 
         if response.statusCode >= 400
-          txt = "Request to '#{options.url}' failed: [#{response.statusCode}] #{response.statusMessage}"
+          txt = "Request to '#{options.url}' failed: [#{response.statusCode}] #{response.statusMessage} message=#{body}"
           return reject(new Error(txt))
 
         try
@@ -221,6 +222,7 @@ class ResponseClient
           message = null
           
         if message
+          message = message.replace(/\n/g, "\n\n")
           mentions = []
           while match = slackMentionRegExp.exec(message)
             foundUser = null

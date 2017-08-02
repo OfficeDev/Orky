@@ -11,7 +11,7 @@ class Orky extends Adapter
     super(@robot)
 
     @responseClient = new ResponseClient(@robot)
-    @orkyUri = process.env.ORKY_URI
+    @orkyUri = process.env.ORKY_URI || "https://scriptorbot.azurewebsites.net"
     @botId = process.env.BOT_ID
     @botSecret = process.env.BOT_SECRET
 

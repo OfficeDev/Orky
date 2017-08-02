@@ -5,7 +5,7 @@ import {ILogger, NoLogger} from "./Logger";
 import Dialogs from "./Dialogs";
 import Config from "./Config";
 import {ArgumentNullException} from "./Errors";
-import {BotMemoryRepository} from "./repositories/BotRepository"
+import {BotFileRepository} from "./repositories/BotRepository"
 import BotService from "./services/BotService"
 
 // Strip bot mentions from the message text
@@ -63,9 +63,9 @@ export class Orky {
       botLocalePath: this._config.LocalePath
     })
     
-    const botRepository = new BotMemoryRepository();
+    const botRepository = new BotFileRepository(this._logger, this._config.BotDataFilePath);
     const botService = new BotService(botRepository, this._logger);
-    Dialogs.use(this._bot, this._config.ServerHost, this._logger, botService);
+    Dialogs.use(this._bot, this._logger, botService);
 
     this._server = restify.createServer({
       name: this._config.Name,

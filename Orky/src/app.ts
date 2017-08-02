@@ -9,11 +9,11 @@ const config = {
   Version: packageData.version as string,
   MicrosoftAppId: process.env.MICROSOFT_APP_ID || "",
   MicrosoftAppPassword: process.env.MICROSOFT_APP_PASSWORD || "",
-  ServerHost: process.env.ROOT_URI || "",
   ServerPort: process.env.port || process.env.PORT || "3978",
   MessagesEndpoint: process.env.MESSAGES_ENDPOINT || "/api/messages",
   DefaultLocale: process.env.DEFAULT_LOCALE || "en",
-  LocalePath: process.env.LOCALE_PATH || "./locale"
+  LocalePath: process.env.LOCALE_PATH || "./locale",
+  BotDataFilePath: process.env.BOT_DATA_FILE_PATH || "./BotData.json"
 };
 
 export default {

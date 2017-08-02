@@ -1,7 +1,7 @@
 {
   "name": "hubot-orky",
   "version": "0.1.0",
-  "description": "",
+  "description": "Hubot adapter for orky",
   "main": "src/Orky.coffee",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
