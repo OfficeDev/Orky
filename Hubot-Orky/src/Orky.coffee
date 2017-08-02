@@ -36,7 +36,7 @@ class Orky extends Adapter
 
     @client.once('no_registration', () =>
       @robot.logger.info("Orky could not find our registration.")
-      @client.disconnect()
+      process.exit(1)
     )
 
     @client.once('disconnect', () =>
