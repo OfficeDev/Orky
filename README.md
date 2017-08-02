@@ -14,7 +14,7 @@ The most popular script executor for Orky is [Hubot](https://hubot.github.com/) 
 
 You should now be able to talk to Orky and add your own bots.
 
-## How to add your own bot?
+## How to add your own OrkyBot?
 This guide can help you add your own bot using the [Hubot](https://hubot.github.com/) framework.
 
 Requirements:
