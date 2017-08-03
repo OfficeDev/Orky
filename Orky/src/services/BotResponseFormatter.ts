@@ -1,4 +1,4 @@
-import {Session, Message, IChatConnectorAddress, IIdentity} from "botbuilder";
+import {Session, Message, IMessage, IChatConnectorAddress, IIdentity} from "botbuilder";
 import {ArgumentNullException} from '../Errors';
 import {BotResponse} from "../Models";
 import {IBotResponseFormatter} from './Interfaces';
@@ -10,7 +10,7 @@ export default class BotResponseFormatter implements IBotResponseFormatter {
   // 1. Replaces all slack @ mentions with Teams @ mentions
   //  Slack mentions take the form of <@[username or id]|[mention text]>
   //  We have to convert this into a mention object which needs the id.
-  prepareOutgoingMessages(session : Session, response: BotResponse) : Message[] {
+  prepareOutgoingMessages(session : Session, response: BotResponse) : IMessage[] {
     if (!response) {
       throw new ArgumentNullException('response');
     }
@@ -31,7 +31,9 @@ export default class BotResponseFormatter implements IBotResponseFormatter {
     return response.messages.map((message) => {
       // If the message is already an object, treat it as if someone already crafted a BF message out of it.
       if(typeof message !== 'string') {
-        return message as Message;
+        const bfMessage = message as IMessage;
+        bfMessage.address = responseAddress;
+        return bfMessage;
       }
 
       // Convert string messages to proper BotFramework message
@@ -47,8 +49,7 @@ export default class BotResponseFormatter implements IBotResponseFormatter {
         response.text(message);
       }
       
-      message = response.toMessage();
-      return message;
+      return response.toMessage();
     });
   }
 

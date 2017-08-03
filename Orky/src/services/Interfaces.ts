@@ -1,4 +1,4 @@
-import {Session, Message} from "botbuilder";
+import {Session, IMessage} from "botbuilder";
 import {Bot, BotStatus, BotMessage, BotResponse} from "../Models";
 
 export interface IBotResponseHandler { (response: BotResponse): void }
@@ -14,5 +14,5 @@ export interface IBotService {
 }
 
 export interface IBotResponseFormatter {
-  prepareOutgoingMessages(session : Session, response: BotResponse) : Message[];
+  prepareOutgoingMessages(session : Session, response: BotResponse) : IMessage[];
 }
