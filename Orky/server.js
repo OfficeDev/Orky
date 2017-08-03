@@ -1,2 +1,2 @@
-var app = require('./build/app');
-app.default.run();
+var orky = require('./build/Orky');
+orky.run();

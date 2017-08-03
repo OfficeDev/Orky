@@ -1,14 +1,15 @@
 import * as restify from "restify";
 import * as SocketIO from "socket.io";
 import {UniversalBot, ChatConnector, IMiddlewareMap, Session} from "botbuilder";
-import {ILogger, NoLogger} from "./Logger";
-import {Dialogs} from "./Dialogs";
-import Config from "./Config";
-import {ArgumentNullException} from "./Errors";
+import {ConsoleLogger} from "./logging/ConsoleLogger";
+import {ILogger} from "./logging/Interfaces";
+import {Config} from "./config/Config";
+import {IConfig} from "./config/Interfaces";
 import {BotFileRepository} from "./repositories/BotRepository"
-import BotService from "./services/BotService"
-import BotResponseFormatter from "./services/BotResponseFormatter"
-
+import {BotService} from "./services/BotService"
+import {BotResponseFormatter} from "./services/BotResponseFormatter"
+import {Dialogs} from "./Dialogs";
+import {ArgumentNullException} from "./Errors";
 
 // Strip bot mentions from the message text
 class StripBotAtMentions implements IMiddlewareMap {
@@ -32,50 +33,45 @@ class StripBotAtMentions implements IMiddlewareMap {
 }
 
 export class Orky {
-  private _config: Config;
+  private _config: IConfig;
   private _logger: ILogger;
   private _server: restify.Server;
-  private _bot: UniversalBot;
-  private _connector: ChatConnector;
 
-  constructor(config: Config, logger?: ILogger) {
+  constructor(config: IConfig) {
     if (!config) {
       throw new ArgumentNullException("config");
     }
-    if (!logger) {
-      logger = new NoLogger();
-    }
 
     this._config = config;
-    this._logger = logger;
+    this._logger = new ConsoleLogger(config.LogLevel);
 
-    this._logger.info(`Created instance of Scriptor with config: ${JSON.stringify(this._config, null, 2)}`)
+    this._logger.info(`Created instance of Orky with config: ${JSON.stringify(this._config, null, 2)}`)
   }
 
   run(): void {
-    this._connector = new ChatConnector({
+    const chatConnector = new ChatConnector({
         appId: this._config.MicrosoftAppId,
         appPassword: this._config.MicrosoftAppPassword
     });
 
-    this._bot = new UniversalBot(this._connector);
-    this._bot.use(new StripBotAtMentions());
-    this._bot.set('localizerSettings', {
+    const universalBot = new UniversalBot(chatConnector);
+    universalBot.use(new StripBotAtMentions());
+    universalBot.set('localizerSettings', {
       defaultLocale: this._config.DefaultLocale,
       botLocalePath: this._config.LocalePath
     })
     
     const botRepository = new BotFileRepository(this._logger, this._config.BotDataFilePath);
-    const botService = new BotService(botRepository, this._logger);
+    const botService = new BotService(botRepository, this._logger, this._config.BotResponseTimeout);
     const botResponseFormatter = new BotResponseFormatter();
     const dialogs = new Dialogs(this._logger, botService, botResponseFormatter);
-    dialogs.use(this._bot);
+    dialogs.use(universalBot);
 
     this._server = restify.createServer({
       name: this._config.Name,
       version: this._config.Version
     });
-    this._server.post(this._config.MessagesEndpoint, this._connector.listen());
+    this._server.post(this._config.MessagesEndpoint, chatConnector.listen());
     const io = SocketIO.listen((this._server as any).server);
     this._server.listen(this._config.ServerPort, () => {
       this._logger.info(`${this._server.name} listening to ${this._server.url}`); 
@@ -84,9 +80,18 @@ export class Orky {
     io.on('connection', (socket) => {
       botService.establishConnection(socket);
     });
+
+    this._logger.info("Orky is running");
   }
 
   stop(): void {
+    this._logger.info("Orky is shutting down");
     this._server.close();
   }
+}
+
+export function run(): void {
+  const config = new Config();
+  const orky = new Orky(config);
+  orky.run();
 }

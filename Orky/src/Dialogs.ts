@@ -1,9 +1,8 @@
 import {UniversalBot, Session, Message, ThumbnailCard, HeroCard, CardImage, AttachmentLayout} from "botbuilder";
-import {ILogger} from './Logger';
 import {ArgumentNullException, InvalidOperationException} from './Errors'
-import {IBotService, IBotResponseFormatter} from "./services/Interfaces";
-import BotResponseFormatter from "./services/BotResponseFormatter";
 import {Bot, BotMessage, BotResponse, User} from "./Models"
+import {ILogger} from './logging/Interfaces';
+import {IBotService, IBotResponseFormatter} from "./services/Interfaces";
 
 export class Dialogs {
   private AddMatch = /^add ([a-zA-Z0-9]{1,10})$/i;

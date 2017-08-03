@@ -3,7 +3,7 @@ import {ArgumentNullException} from '../Errors';
 import {BotResponse} from "../Models";
 import {IBotResponseFormatter} from './Interfaces';
 
-export default class BotResponseFormatter implements IBotResponseFormatter {
+export class BotResponseFormatter implements IBotResponseFormatter {
   private static imageRegExp = /^(https?:\/\/.+\/(.+)\.(jpg|png|gif|jpeg$))/;
 
   // Fixes the response to have the proper information that teams needs

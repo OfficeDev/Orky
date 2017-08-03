@@ -1,16 +1,8 @@
 import * as fs from "fs";
-import {Bot} from "../Models";
 import {ArgumentNullException, InvalidOperationException} from "../Errors";
-import {ILogger} from "../Logger";
-
-export interface IBotRepository {
-  save(bot: Bot): Promise<Bot>;
-  delete(bot: Bot): Promise<Bot|undefined>;
-  deleteById(botId: string): Promise<Bot|undefined>;
-  findById(botId: string): Promise<Bot|undefined>;
-  findByTeamAndName(teamId: string, botName: string): Promise<Bot|undefined>;
-  getAllByTeam(teamId: string): Promise<Bot[]>;
-}
+import {Bot} from "../Models";
+import {IBotRepository} from "./Interfaces";
+import {ILogger} from "../logging/Interfaces";
 
 export class BotFileRepository implements IBotRepository {
   private _botsByTeamAndName: any;

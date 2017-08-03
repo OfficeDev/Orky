@@ -1,18 +1,17 @@
 import {EventEmitter} from 'events';
-import {v4 as uuid} from 'uuid';
-import {Bot, BotStatus, BotMessage, BotResponse} from "../Models";
-import {ILogger} from "../Logger";
 import {ArgumentNullException, ArgumentException} from "../Errors";
-import {IBotRepository} from "../repositories/BotRepository";
+import {Bot, BotMessage, BotResponse} from "../Models";
+import {ILogger} from "../logging/Interfaces";
+import {IBotRepository} from "../repositories/Interfaces";
 import {IBotResponseHandler} from "./Interfaces";
 
 export class BotConnection extends EventEmitter {
-
   private _bot: Bot;
   private _socket: SocketIO.Socket;
+  private _responseTimeout: number;
   private _logger: ILogger;
 
-  constructor(socket: SocketIO.Socket, botRepository: IBotRepository, logger: ILogger) {
+  constructor(socket: SocketIO.Socket, botRepository: IBotRepository, responseTimeout: number, logger: ILogger) {
     super();
     if (!socket) {
       throw new ArgumentNullException("socket");
@@ -26,11 +25,19 @@ export class BotConnection extends EventEmitter {
 
     this._logger = logger;
     this._socket = socket;
+    this._responseTimeout = responseTimeout;
 
     this._socket.once('register', (botData) => {
       this._logger.info(`Registration request for ${JSON.stringify(botData, null, 2)}`);
       const botId = botData.id;
       const botSecret = botData.secret;
+
+      if (!botId || !botSecret) {
+        socket.emit('no_registration');
+        socket.disconnect();
+        this.emit('disconnected');
+        return;
+      }
 
       botRepository.findById(botId)
         .then((bot) => {
@@ -61,12 +68,17 @@ export class BotConnection extends EventEmitter {
   }
 
   sendMessage(message: BotMessage, responseHandler: IBotResponseHandler): void {
-    this._socket.on(`message-${message.id}`, (data) => {
+    const event = `message-${message.id}`;
+    this._socket.on(event, (data) => {
       const response = new BotResponse(data.type, data.messages);
       responseHandler(response);
     });
 
-    //TODO reject on timeout..
+    // Remove listeners to clean up memory.
+    setTimeout((event) => {
+      this._socket.removeAllListeners(event);
+    }, this._responseTimeout, event);
+
     this._socket.emit('post_message', message);
   }
 }

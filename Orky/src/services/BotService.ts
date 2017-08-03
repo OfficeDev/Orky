@@ -1,18 +1,19 @@
 import * as crypto from 'crypto';
 import * as SocketIO from "socket.io";
-import {Bot, BotStatus, BotMessage, BotResponse} from "../Models";
-import {IBotRepository} from "../repositories/BotRepository";
 import {ArgumentNullException, ArgumentException} from "../Errors";
-import {ILogger} from "../Logger";
+import {Bot, BotStatus, BotMessage, BotResponse} from "../Models";
+import {ILogger} from "../logging/Interfaces";
+import {IBotRepository} from "../repositories/Interfaces";
 import {IBotResponseHandler, IBotService} from "./Interfaces";
 import {BotConnection} from "./BotConnection";
 
-export default class BotService implements IBotService {
+export class BotService implements IBotService {
   private _botRepository: IBotRepository;
   private _logger: ILogger;
+  private _responseTimeout: number;
   private _botConnections: {[key:string]: BotConnection};
 
-  constructor(botRepository: IBotRepository, logger: ILogger) {
+  constructor(botRepository: IBotRepository, logger: ILogger, responseTimeout: number) {
     if (!botRepository) {
       throw new ArgumentNullException("botRepository");
     }
@@ -22,10 +23,11 @@ export default class BotService implements IBotService {
     this._botRepository = botRepository;
     this._botConnections = {};
     this._logger = logger;
+    this._responseTimeout = responseTimeout;
   }
 
   establishConnection(socket: SocketIO.Socket): void {
-    const connection = new BotConnection(socket, this._botRepository, this._logger);
+    const connection = new BotConnection(socket, this._botRepository, this._responseTimeout, this._logger);
     connection.once('registered', (botId) => {
       if (this._botConnections[botId]) {
           this._botConnections[botId].disconnect();
