@@ -32,10 +32,16 @@ yo hubot
 ```
 @Orky add <botname>
 ```
-4. Take the id and secret that Orky gave you and go back to your node-capable terminal. Type
+4. Take the id and secret that Orky gave you and go back to your node-capable terminal. If you are using the `bash` shell, type:
 ```bash
 export BOT_ID=<id>
 export BOT_SECRET=<secret>
+./bin/hubot -a orky
+```
+If you are using Windows `cmd` shell, type:
+```cmd
+set BOT_ID=<id>
+set BOT_SECRET=<secret>
 ./bin/hubot -a orky
 ```
 
