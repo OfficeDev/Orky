@@ -2,11 +2,13 @@ import * as restify from "restify";
 import * as SocketIO from "socket.io";
 import {UniversalBot, ChatConnector, IMiddlewareMap, Session} from "botbuilder";
 import {ILogger, NoLogger} from "./Logger";
-import Dialogs from "./Dialogs";
+import {Dialogs} from "./Dialogs";
 import Config from "./Config";
 import {ArgumentNullException} from "./Errors";
 import {BotFileRepository} from "./repositories/BotRepository"
 import BotService from "./services/BotService"
+import BotResponseFormatter from "./services/BotResponseFormatter"
+
 
 // Strip bot mentions from the message text
 class StripBotAtMentions implements IMiddlewareMap {
@@ -65,16 +67,15 @@ export class Orky {
     
     const botRepository = new BotFileRepository(this._logger, this._config.BotDataFilePath);
     const botService = new BotService(botRepository, this._logger);
-    Dialogs.use(this._bot, this._logger, botService);
+    const botResponseFormatter = new BotResponseFormatter();
+    const dialogs = new Dialogs(this._logger, botService, botResponseFormatter);
+    dialogs.use(this._bot);
 
     this._server = restify.createServer({
       name: this._config.Name,
       version: this._config.Version
     });
     this._server.post(this._config.MessagesEndpoint, this._connector.listen());
-    this._server.get(/\/content\/?.*/, restify.plugins.serveStatic({
-      directory: __dirname + "/../"
-    }));
     const io = SocketIO.listen((this._server as any).server);
     this._server.listen(this._config.ServerPort, () => {
       this._logger.info(`${this._server.name} listening to ${this._server.url}`); 

@@ -118,7 +118,8 @@ export class BotFileRepository implements IBotRepository {
           throw new InvalidOperationException(`File '${this._filePath}' is corrupt.`);
         }
 
-        const bot = new Bot(value.teamId, value.id, value.name, value.secret);
+        const bot = new Bot(value.teamId, value.name, value.secret);
+        (bot as any).id = value.id; // force the id
         this._botsById[value.id] = bot;
         let teamMap = this._botsByTeamAndName[bot.teamId]
         if (!teamMap) {

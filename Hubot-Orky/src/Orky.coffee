@@ -4,13 +4,11 @@ try
 catch
   prequire = require('parent-require')
   {Robot,Adapter,TextMessage,User} = prequire 'hubot'
-ResponseClient = require('./ResponseClient')
 
 class Orky extends Adapter
   constructor: (@robot) ->
     super(@robot)
 
-    @responseClient = new ResponseClient(@robot)
     @orkyUri = process.env.ORKY_URI || "https://scriptorbot.azurewebsites.net"
     @botId = process.env.BOT_ID
     @botSecret = process.env.BOT_SECRET
@@ -36,7 +34,7 @@ class Orky extends Adapter
 
     @client.once('no_registration', () =>
       @robot.logger.info("Orky could not find our registration.")
-      process.exit(1)
+      @client.disconnect()
     )
 
     @client.once('disconnect', () =>
@@ -50,27 +48,47 @@ class Orky extends Adapter
       @emit('connected')
     )
 
-    @client.on('post_message', (data) =>
-      text = "#{@robot.name} #{data?.text}"
-      user = data?.user
-      if user?
-        user.room = data?.address?.conversation?.id
-      address = data?.address
-      token = data?.token
+    @client.on('post_message', (message) =>
+      if not message?
+        @robot.logger.error("Received 'post_message' event with no data.")
+        return
 
-      message = new TextMessage(user, text, address?.id)
-      message.token = token
-      message.address = address
+      text = "#{@robot.name} #{message.text}"
+      user = message.sender
+      if not user?
+        @robot.logger.error("Received 'post_message' event with no sender data.")
+        return
 
+      user.room = message.channelId
+      message = new TextMessage(user, text, message.id)
       @robot.receive message
     )
+
   send: (context, strings...) ->
     @robot.logger.info "Send"
-    @responseClient.postMessages(strings..., context, false)
+    if not context?.message?.id?
+      @robot.logger.error("Context does not have a message id.")
+      return
+    
+    messageId = context.message.id
+    response =
+      type: 'send'
+      messages: strings
+
+    @client.emit("message-#{messageId}", response)
 
   reply: (context, strings...) ->
     @robot.logger.info "Reply"
-    @responseClient.postMessages(strings..., context, true)
+    if not context?.message?.id?
+      @robot.logger.error("Context does not have a message id.")
+      return
+    
+    messageId = context.message.id
+    response =
+      type: 'reply'
+      messages: strings
+
+    @client.emit("message-#{messageId}", response)
 
 exports.use = (robot) ->
   new Orky robot

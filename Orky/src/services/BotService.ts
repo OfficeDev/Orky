@@ -1,82 +1,13 @@
 import * as crypto from 'crypto';
 import * as SocketIO from "socket.io";
-import {EventEmitter} from 'events';
-import {v4 as uuid} from 'uuid';
-import {Bot, BotStatus} from "../Models";
+import {Bot, BotStatus, BotMessage, BotResponse} from "../Models";
 import {IBotRepository} from "../repositories/BotRepository";
 import {ArgumentNullException, ArgumentException} from "../Errors";
 import {ILogger} from "../Logger";
+import {IBotResponseHandler, IBotService} from "./Interfaces";
+import {BotConnection} from "./BotConnection";
 
-class BotConnection extends EventEmitter {
-  private _bot: Bot;
-  private _socket: SocketIO.Socket;
-  private _logger: ILogger;
-
-  constructor(socket: SocketIO.Socket, botRepository: IBotRepository, logger: ILogger) {
-    super();
-    if (!socket) {
-      throw new ArgumentNullException("socket");
-    }
-    if (!logger) {
-      throw new ArgumentNullException("logger");
-    }
-    if (!socket.connected) {
-      throw new ArgumentException("socket", "Socket is not connected.");
-    }
-
-    this._logger = logger;
-    this._socket = socket;
-
-    this._socket.once('register', (botData) => {
-      this._logger.info(`Registration request for ${JSON.stringify(botData, null, 2)}`);
-      const botId = botData.id;
-      const botSecret = botData.secret;
-
-      botRepository.findById(botId)
-        .then((bot) => {
-          if (!bot || bot.secret !== botSecret) {
-            this._logger.info(`No registration data found for id ${botId}`);
-            socket.emit('no_registration');
-            socket.disconnect();
-            this.emit('disconnected');
-            return;
-          }
-          this._bot = bot;
-
-          this._logger.info(`${bot.name} (${bot.id}) successfully registered.`);
-          socket.emit('registration_data', {id: bot.id, name: bot.name});
-          this.emit('registered', bot.id);
-
-          this._socket.once('disconnect', () => {
-            this._logger.info(`${bot.name} (${bot.id}) disconnected.`);
-            this.emit('disconnected', bot.id);
-          });
-        });
-    });
-  }
-
-  disconnect(): void {
-    this._socket.disconnect();
-    this.emit('disconnected', this._bot.id);
-  }
-
-  sendMessage(message: any): void {
-    message = {
-      text: message.text,
-      type: message.type,
-      timestamp: message.timestamp,
-      localTimestamp: message.localTimestamp,
-      address: message.address,
-      user: message.user,
-      token: message.token,
-      sourceEvent: message.sourceEvent
-    };
-
-    this._socket.emit('post_message', message);
-  }
-}
-
-export default class BotService {
+export default class BotService implements IBotService {
   private _botRepository: IBotRepository;
   private _logger: ILogger;
   private _botConnections: {[key:string]: BotConnection};
@@ -119,8 +50,7 @@ export default class BotService {
         
         return this.createBotSecret()
           .then((secret) => {
-            const botId = uuid();
-            const bot = new Bot(teamId, botId, botName, secret);
+            const bot = new Bot(teamId, botName, secret);
             return this._botRepository.save(bot);
           })
       });
@@ -182,23 +112,23 @@ export default class BotService {
       });
   }
 
-  async sendMessageToBot(teamId: string, botName: string, message: any): Promise<any> {
+  async sendMessageToBot(teamId: string, botName: string, message: BotMessage, responseHandler: IBotResponseHandler): Promise<Bot|null> {
     return this._botRepository.findByTeamAndName(teamId, botName)
       .then((bot) => {
         if (!bot) {
-          return undefined;
+          return null;
         }
 
         const connection = this._botConnections[bot.id];
         if (!connection) {
-          return undefined;
+          return null;
         }
 
         if (bot.disabled) {
-          return undefined;
+          return null;
         }
 
-        connection.sendMessage(message);
+        connection.sendMessage(message, responseHandler);
         return bot;
       });
   }

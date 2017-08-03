@@ -8,4 +8,5 @@ export default interface Config {
   DefaultLocale: string;
   LocalePath: string;
   BotDataFilePath: string;
+  LogLevel: number;
 }

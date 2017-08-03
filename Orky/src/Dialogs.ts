@@ -1,10 +1,11 @@
 import {UniversalBot, Session, Message, ThumbnailCard, HeroCard, CardImage, AttachmentLayout} from "botbuilder";
 import {ILogger} from './Logger';
 import {ArgumentNullException, InvalidOperationException} from './Errors'
-import BotService from "./services/BotService";
-import {Bot} from "./Models"
+import {IBotService, IBotResponseFormatter} from "./services/Interfaces";
+import BotResponseFormatter from "./services/BotResponseFormatter";
+import {Bot, BotMessage, BotResponse, User} from "./Models"
 
-class Dialogs {
+export class Dialogs {
   private AddMatch = /^add ([a-zA-Z0-9]{1,10})$/i;
   private RemoveMatch = /^remove ([a-zA-Z0-9]{1,10})$/i;
   private DisableMatch = /^disable ([a-zA-Z0-9]{1,10})$/i;
@@ -12,17 +13,45 @@ class Dialogs {
   private TellMatch = /^tell ([a-zA-Z0-9]{1,10}) (.+)$/i;
 
   private _logger: ILogger;
-  private _botService: BotService;
+  private _botService: IBotService;
+  private _botResponseFormatter: IBotResponseFormatter;
 
-  constructor(logger: ILogger, botService: BotService) {
+  constructor(logger: ILogger, botService: IBotService, botResponseFormatter: IBotResponseFormatter) {
     if (!logger) {
       throw new ArgumentNullException("logger");
     }
     if (!botService) {
       throw new ArgumentNullException("botService");
     }
+    if (!botResponseFormatter) {
+      throw new ArgumentNullException("botResponseFormatter");
+    }
     this._logger = logger;
     this._botService = botService;
+    this._botResponseFormatter = botResponseFormatter;
+  }
+
+  use(bot: UniversalBot) : void {
+    bot.dialog('/',
+      (session, args) => this.root(session, args));
+    bot.dialog("/add",
+      (session, args) => this.add(session, args))
+      .triggerAction({ matches: /^add ([a-zA-Z0-9]{1,10})$/i });
+    bot.dialog("/remove",
+      (session, args) => this.remove(session, args))
+      .triggerAction({ matches: /^remove ([a-zA-Z0-9]{1,10})$/i });
+    bot.dialog("/disable",
+      (session, args) => this.disable(session, args))
+      .triggerAction({ matches: /^disable ([a-zA-Z0-9]{1,10})$/i });
+    bot.dialog("/enable",
+      (session, args) => this.enable(session, args))
+      .triggerAction({ matches: /^enable ([a-zA-Z0-9]{1,10})$/i });
+    bot.dialog("/status",
+      (session, args) => this.status(session, args))
+      .triggerAction({ matches: /^status/i });
+    bot.dialog("/tell", 
+      (session, args) => this.tell(session, args))
+      .triggerAction({ matches: /^tell ([a-zA-Z0-9]{1,10}) (.+)$/i });
   }
 
   root(session: Session, args?: any): void {
@@ -246,27 +275,29 @@ class Dialogs {
 
     const botName = match[1];
     const message = match[2];
-    const botMessage = (session.message as any);
-    botMessage.text = message;
+    const sender = new User(
+      session.message.address.user.id,
+      session.message.address.user.name || "");
+    const conversation = session.message.address.conversation;
+    const conversationId = conversation ? conversation.id : sender.id;
+    const botMessage = new BotMessage(message, teamId, "threadId", conversationId, sender)
 
-    const bot = await new Promise<string>((resolve, reject) => {
-        (session.connector as any).getAccessToken((error: Error, accessToken: string) => {
-          if (error) {
-            return reject(error);
-          }
-          resolve(accessToken);
-        });
-    })
-    .then((token) => {
-      botMessage.token = token;
-      return this._botService.sendMessageToBot(teamId, botName, botMessage);
-    });
+    const responseHandler = (response: BotResponse) => {
+      const messages = this._botResponseFormatter.prepareOutgoingMessages(session, response);
+      messages.forEach((message) => {
+        this._logger.info(`Replying from bot named '${botName}' in team '${teamId}'`);
+        session.send(message);
+      })
+    }
+
+    const bot =
+      await this._botService.sendMessageToBot(teamId, botName, botMessage, responseHandler);
 
     if (!bot) {
       session.send("bot_not_found", botName);
       return;
     }
-    this._logger.info(`Sent message to bot named '${bot.name}' in team '${bot.teamId}'`);
+    this._logger.info(`Sent message to bot named '${bot.name}' in team '${teamId}'`);
   }
 
   private extractTeamId(session: Session) : string | null {
@@ -281,31 +312,5 @@ class Dialogs {
     }
 
     return teamId;
-  }
-}
-
-export default {
-  use(bot: UniversalBot, logger: ILogger, botService: BotService) : void {
-    const dialogs = new Dialogs(logger, botService);
-    bot.dialog('/',
-      (session, args) => dialogs.root(session, args));
-    bot.dialog("/add",
-      (session, args) => dialogs.add(session, args))
-      .triggerAction({ matches: /^add ([a-zA-Z0-9]{1,10})$/i });
-    bot.dialog("/remove",
-      (session, args) => dialogs.remove(session, args))
-      .triggerAction({ matches: /^remove ([a-zA-Z0-9]{1,10})$/i });
-    bot.dialog("/disable",
-      (session, args) => dialogs.disable(session, args))
-      .triggerAction({ matches: /^disable ([a-zA-Z0-9]{1,10})$/i });
-    bot.dialog("/enable",
-      (session, args) => dialogs.enable(session, args))
-      .triggerAction({ matches: /^enable ([a-zA-Z0-9]{1,10})$/i });
-    bot.dialog("/status",
-      (session, args) => dialogs.status(session, args))
-      .triggerAction({ matches: /^status/i });
-    bot.dialog("/tell", 
-      (session, args) => dialogs.tell(session,args))
-      .triggerAction({ matches: /^tell ([a-zA-Z0-9]{1,10}) (.+)$/i });
   }
 }

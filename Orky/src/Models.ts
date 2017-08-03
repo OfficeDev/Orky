@@ -1,3 +1,4 @@
+import {v4 as uuid} from 'uuid';
 import {ArgumentNullException} from './Errors'
 
 export class Bot {
@@ -7,12 +8,9 @@ export class Bot {
   readonly secret: string;
   disabled: boolean;
 
-  constructor(teamId: string, id: string, name: string, secret: string) {
+  constructor(teamId: string, name: string, secret: string) {
     if (!teamId) {
       throw new ArgumentNullException("teamId");
-    }
-    if (!id) {
-      throw new ArgumentNullException("id");
     }
     if (!name) {
       throw new ArgumentNullException("name");
@@ -21,8 +19,8 @@ export class Bot {
       throw new ArgumentNullException("secret");
     }
 
+    this.id = uuid();
     this.teamId = teamId;
-    this.id = id;
     this.name = name;
     this.secret = secret;
     this.disabled = false;
@@ -47,5 +45,79 @@ export class BotStatus {
 
     this.bot = bot;
     this.status = status;
+  }
+}
+
+export class User {
+  readonly id: string;
+  readonly name: string;
+
+  constructor(id: string, name: string) {
+    if (!id) {
+      throw new ArgumentNullException("id");
+    }
+    if (!name) {
+      throw new ArgumentNullException("name");
+    }
+
+    this.id = id;
+    this.name = name;
+  }
+}
+
+export class BotMessage {
+  readonly id: string;
+  readonly text: string;
+  readonly teamId: string;
+  readonly threadId: string;
+  readonly channelId: string;
+  readonly timestamp: Date;
+  readonly sender: User;
+
+  constructor(
+    text: string,
+    teamId: string,
+    threadId: string,
+    channelId: string,
+    sender: User) {
+    if (!text) {
+      throw new ArgumentNullException("text");
+    }
+    if (!teamId) {
+      throw new ArgumentNullException("teamId");
+    }
+    if (!threadId) {
+      throw new ArgumentNullException("threadId");
+    }
+    if (!channelId) {
+      throw new ArgumentNullException("channelId");
+    }
+    if (!sender) {
+      throw new ArgumentNullException("sender");
+    }
+
+    this.id = uuid();
+    this.text = text;
+    this.teamId = teamId;
+    this.threadId = threadId;
+    this.channelId = channelId;
+    this.sender = sender;
+  }
+}
+
+export class BotResponse {
+  readonly type: string;
+  readonly messages: any[];
+
+  constructor(type: string, messages: any[]) {
+    if (!type) {
+      throw new ArgumentNullException("type");
+    }
+    if (!messages) {
+      throw new ArgumentNullException("messages");
+    }
+
+    this.type = type;
+    this.messages = messages;
   }
 }
