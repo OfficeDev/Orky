@@ -1,11 +1,10 @@
 import {ILogger} from "../logging/Interfaces";
 import {BaseDialog} from "./BaseDialog";
 import {Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
-import {InvalidOperationException} from "../Errors";
 import {IBotService} from "../services/Interfaces";
 import {SessionUtils} from "../utils/SessionUtils";
 
-export class EnableDialog extends BaseDialog {
+export class RenameDialog extends BaseDialog {
   private _botService : IBotService;
 
   constructor(botService: IBotService, triggerRegExp: RegExp, logger: ILogger) {
@@ -21,7 +20,7 @@ export class EnableDialog extends BaseDialog {
     const incomingMessage = session.message.text || "";
     const match = this._triggerRegExp.exec(incomingMessage);
     if (!match) {
-      this._logger.error(`Failed to extract bot name from enable message.  message='${session.message.text}'`);
+      this._logger.error(`Failed to extract bot name from register message.  message='${session.message.text}'`);
       session.send("cannot_extract_bot_name");
       return;
     }
@@ -31,24 +30,28 @@ export class EnableDialog extends BaseDialog {
       session.send("cannot_extract_team_id");
       return;
     }
-    const botName = match[1];
-    const bot = await this._botService.enableBotWithName(teamId, botName);
-    if (!bot) {
-      session.send("bot_not_found", botName);
+    const fromName = match[1];
+    const toName = match[2];
+    if (fromName == toName) {
+      session.send("bot_rename_same_name");
       return;
     }
 
-    this._logger.info(`Enabled bot named '${bot.name}' in team '${bot.teamId}'`);
-    
+    const bot = await this._botService.renameBot(teamId, fromName, toName);
+    if (!bot) {
+      session.send("bot_not_registered", fromName);
+      return;
+    }
+    this._logger.info(`Renamed bot from '${fromName}' to '${bot.name}' to team '${bot.teamId}'`);
+
     const botCard = new ThumbnailCard(session)
-      .title("bot_enabled_title", bot.name)
-      .text("bot_enabled_text")
+      .title("bot_renamed_title", fromName, bot.name)
+      .text("bot_renamed_text", bot.id, bot.secret)
       .images([
         new CardImage(session)
           .url(`${bot.iconUrl}`)
           .alt("bot_avatar_alt_text")
       ]);
-
     const message = new Message(session).addAttachment(botCard);
     session.send(message);
   }

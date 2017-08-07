@@ -50,11 +50,10 @@ export class Orky {
 
   run(): void {
     const chatConnector = new ChatConnector({
-        appId: this._config.MicrosoftAppId,
-        appPassword: this._config.MicrosoftAppPassword
+      appId: this._config.MicrosoftAppId,
+      appPassword: this._config.MicrosoftAppPassword
     });
 
-    
     const botRepository = new BotFileRepository(this._logger, this._config.BotDataFilePath);
     const botService = new BotService(botRepository, this._logger, this._config.BotResponseTimeout);
     const botMessageFormatter = new BotMessageFormatter();
@@ -71,6 +70,7 @@ export class Orky {
       version: this._config.Version
     });
     this._server.post(this._config.MessagesEndpoint, chatConnector.listen());
+    
     const io = SocketIO.listen((this._server as any).server);
     this._server.listen(this._config.ServerPort, () => {
       this._logger.info(`${this._server.name} listening to ${this._server.url}`); 

@@ -1,6 +1,7 @@
 import {ILogger} from "../logging/Interfaces";
 import {BaseDialog} from "./BaseDialog";
-import {Session, ThumbnailCard, CardImage, Message, AttachmentLayout} from "botbuilder/lib/botbuilder";
+import {Session, ThumbnailCard, CardImage, Message, AttachmentLayout, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
+import {Status} from "../Models";
 import {InvalidOperationException} from "../Errors";
 import {IBotService} from "../services/Interfaces";
 import {SessionUtils} from "../utils/SessionUtils";
@@ -13,7 +14,11 @@ export class StatusDialog extends BaseDialog {
     this._botService = botService;
   }
 
-  protected async performAction(session: Session, args?: any): Promise<void> {
+  protected buildDialog(): IDialogWaterfallStep {
+    return (session: Session) => this.performAction(session);
+  }
+
+  private async performAction(session: Session): Promise<void> {
     const teamId = SessionUtils.extractTeamId(session);
     if (!teamId) {
       session.send("cannot_extract_team_id");
@@ -29,11 +34,14 @@ export class StatusDialog extends BaseDialog {
     const thumbnailCards = statuses.map((status) => {
       const bot = status.bot;
       return new ThumbnailCard(session)
-        .title(`${bot.name} - ${status.status}`)
-        .text(`Id <b>${bot.id}</b><br/>Secret <b>${bot.secret}</b>`)
+        .title("bot_status_title",
+          bot.name,
+          session.gettext(`bot_status_${Status[status.status]}`)
+        )
+        .text("bot_status_text", bot.id, bot.secret)
         .images([
           new CardImage(session)
-            .url(`${bot.thumbnailImageUri()}`)
+            .url(`${bot.iconUrl}`)
             .alt("bot_avatar_alt_text")
         ]);
     })

@@ -1,4 +1,4 @@
-import {UniversalBot, Session} from "botbuilder";
+import {UniversalBot, Session, IDialogWaterfallStep} from "botbuilder";
 import {ILogger} from "../logging/Interfaces";
 import {ArgumentNullException, InvalidOperationException} from "../Errors";
 
@@ -27,26 +27,52 @@ export class BaseDialog {
     }
 
     this._logger.info(`Registered dialog '${name}'`);
-    bot.dialog(name, (session, args) => this.action(session, args))
+    let dialogActions = this.buildDialog();
+    if (!Array.isArray(dialogActions)) {
+      dialogActions = [dialogActions];
+    }
+
+    dialogActions = dialogActions.map((action) => this.wrapAction(action));
+    if (dialogActions.length > 0) {
+      let lastAction = dialogActions[dialogActions.length-1];
+      lastAction = this.wrapFinalAction(lastAction);
+      dialogActions[dialogActions.length-1] = lastAction;
+    }
+
+    bot.dialog(name, dialogActions)
       .triggerAction({
         matches: this._triggerRegExp
       });
   }
 
-  private action(session: Session, args?: any): void {
-    this._logger.debug(`Received message=${JSON.stringify(session.message, null,2)}`);
-    if (!session || !session.message || !session.message.text) {
-      throw new InvalidOperationException("'session' or 'session.message' is undefined.");
-    }
+  private wrapAction(action: IDialogWaterfallStep): IDialogWaterfallStep {
+    return (session: Session, args?: any) => {
+      this._logger.debug(`Received message=${JSON.stringify(session.message, null,2)}`);
+      this._logger.debug(`args=${JSON.stringify(args, null, 2)}`);
+      if (!session || !session.message) {
+        throw new InvalidOperationException("'session' or 'session.message' is undefined.");
+      }
 
-    session.sendTyping();
-    this.performAction(session, args)
-      .then(() => {
-        session.endDialog();
-      });
+      session.sendTyping();
+      return action(session, args);
+    };
   }
 
-  protected performAction(session: Session, args?: any) : Promise<void> {
-    return Promise.resolve();
+  private wrapFinalAction(action: IDialogWaterfallStep): IDialogWaterfallStep {
+    return (session: Session, args?: any) => {
+      const result = action(session, args);
+      if (typeof result.then === "function") {
+        result.then(() => {
+          session.endDialog();
+        })
+      }
+      else {
+        session.endDialog();
+      }
+    };
+  }
+
+  protected buildDialog() : IDialogWaterfallStep[]|IDialogWaterfallStep {
+    return [];
   }
 }

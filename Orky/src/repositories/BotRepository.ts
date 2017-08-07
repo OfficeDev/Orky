@@ -28,6 +28,11 @@ export class BotFileRepository implements IBotRepository {
       throw new ArgumentNullException("bot");
     }
 
+    const originalBot = this._botsById[bot.id];
+    if (originalBot && originalBot.name.toLowerCase() !== bot.name.toLowerCase()) {
+      delete this._botsByTeamAndName[originalBot.teamId][originalBot.name.toLowerCase()];
+    }
+
     this._botsById[bot.id] = bot;
     let teamMap = this._botsByTeamAndName[bot.teamId]
     if (!teamMap) {
@@ -40,7 +45,7 @@ export class BotFileRepository implements IBotRepository {
       .then(() => bot);
   }
 
-  async delete(bot: Bot): Promise<Bot|undefined> {
+  async delete(bot: Bot): Promise<Bot|null> {
     if (!bot) {
       throw new ArgumentNullException("bot");
     }
@@ -48,7 +53,7 @@ export class BotFileRepository implements IBotRepository {
     return this.deleteById(bot.id);
   }
 
-  async deleteById(botId: string): Promise<Bot|undefined> {
+  async deleteById(botId: string): Promise<Bot|null> {
     if (!botId) {
       throw new ArgumentNullException("botId");
     }
@@ -64,15 +69,15 @@ export class BotFileRepository implements IBotRepository {
       });
   }
 
-  async findById(botId: string): Promise<Bot|undefined> {
+  async findById(botId: string): Promise<Bot|null> {
     if (!botId) {
       throw new ArgumentNullException("botId");
     }
 
-    return this._botsById[botId];
+    return this.cloneBot(this._botsById[botId]);
   }
 
-  async findByTeamAndName(teamId: string, botName: string): Promise<Bot|undefined> {
+  async findByTeamAndName(teamId: string, botName: string): Promise<Bot|null> {
     if (!teamId) {
       throw new ArgumentNullException("teamId");
     }
@@ -81,10 +86,10 @@ export class BotFileRepository implements IBotRepository {
     }
 
     if (this._botsByTeamAndName[teamId]) {
-      return this._botsByTeamAndName[teamId][botName.toLowerCase()];
+      return this.cloneBot(this._botsByTeamAndName[teamId][botName.toLowerCase()]);
     }
 
-    return undefined;
+    return null;
   }
 
   async getAllByTeam(teamId: string): Promise<Bot[]> {
@@ -93,7 +98,18 @@ export class BotFileRepository implements IBotRepository {
     }
 
     const botByName = this._botsByTeamAndName[teamId] || {};
-    return Object.values(botByName);
+    return Object.values(botByName).map((bot) => this.cloneBot(bot));
+  }
+
+  private cloneBot(bot: Bot): Bot {
+    if (!bot) {
+      return bot;
+    }
+    const shadowBot = new Bot(bot.teamId, bot.name, bot.secret) as any;
+    shadowBot.disabled = bot.disabled;
+    shadowBot.id = bot.id;
+    shadowBot.iconUrl = bot.iconUrl;
+    return shadowBot;
   }
 
   private loadData() : void {
@@ -111,6 +127,8 @@ export class BotFileRepository implements IBotRepository {
         }
 
         const bot = new Bot(value.teamId, value.name, value.secret);
+        bot.disabled = value.disabled;
+        bot.iconUrl = value.iconUrl || bot.iconUrl;
         (bot as any).id = value.id; // force the id
         this._botsById[value.id] = bot;
         let teamMap = this._botsByTeamAndName[bot.teamId]

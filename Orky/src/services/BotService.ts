@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import * as SocketIO from "socket.io";
 import {ArgumentNullException, ArgumentException} from "../Errors";
-import {Bot, BotStatus, BotMessage, BotResponse} from "../Models";
+import {Bot, BotStatus, Status, BotMessage, BotResponse} from "../Models";
 import {ILogger} from "../logging/Interfaces";
 import {IBotRepository} from "../repositories/Interfaces";
 import {IBotResponseHandler, IBotService} from "./Interfaces";
@@ -42,12 +42,12 @@ export class BotService implements IBotService {
     });
   }
 
-  async registerBotWithName(teamId: string, botName: string): Promise<Bot|undefined> {
+  async registerBotWithName(teamId: string, botName: string): Promise<Bot|null> {
     return this._botRepository
       .findByTeamAndName(teamId, botName)
       .then((bot) => {
         if (bot) {
-          return Promise.resolve(undefined);
+          return Promise.resolve(null);
         }
         
         return this.createBotSecret()
@@ -58,41 +58,91 @@ export class BotService implements IBotService {
       });
   }
 
-  async deregisterBotWithName(teamId: string, botName: string): Promise<Bot|undefined> {
+  async deregisterBotWithName(teamId: string, botName: string): Promise<Bot|null> {
     return this._botRepository
       .findByTeamAndName(teamId, botName)
       .then((bot) => {
         if (!bot) {
-          return Promise.resolve(undefined);
+          return Promise.resolve(null);
         }
 
         return this._botRepository.delete(bot);
       });
   }
 
-  async enableBotWithName(teamId: string, botName: string): Promise<Bot|undefined> {
+  async enableBotWithName(teamId: string, botName: string): Promise<Bot|null> {
     return this._botRepository
       .findByTeamAndName(teamId, botName)
       .then((bot) => {
         if (!bot) {
-          return Promise.resolve(undefined);
+          return Promise.resolve(null);
         }
 
         bot.disabled = false;
+        return this._botRepository.save(bot);
+      });
+  }
+
+  async disableBotWithName(teamId: string, botName: string): Promise<Bot|null> {
+    return this._botRepository
+      .findByTeamAndName(teamId, botName)
+      .then((bot) => {
+        if (!bot) {
+          return Promise.resolve(null);
+        }
+
+        bot.disabled = true;
+        return this._botRepository.save(bot);
+      });
+  }
+
+  async renameBot(teamId: string, fromName: string, toName: string): Promise<Bot|null> {
+    return this._botRepository
+      .findByTeamAndName(teamId, toName)
+      .then((bot) => {
+        // Fail if there is another bot with the same toName.
+        // If the toName is the same as the bot's name and only casing is different
+        // then we should rename it still.
+        if (bot) {
+          if (bot.name.toLowerCase() === toName.toLowerCase()) {
+            return bot;
+          }
+          return Promise.resolve(null);
+        }
+
+        return this._botRepository
+          .findByTeamAndName(teamId, fromName);
+      })
+      .then((bot) => {
+        if (!bot) {
+          return Promise.resolve(null);
+        }
+
+        bot.name = toName;
+        return this._botRepository.save(bot);
+      })
+      .then((bot) => {
+        if (!bot) {
+          return Promise.resolve(null);
+        }
+
+        const connection = this.getBotConnection(bot);
+        if (connection) {
+          connection.rename(toName);
+        }
+
         return Promise.resolve(bot);
       });
   }
 
-  async disableBotWithName(teamId: string, botName: string): Promise<Bot|undefined> {
+  async doesBotExist(teamId: string, botName: string) : Promise<boolean> {
     return this._botRepository
       .findByTeamAndName(teamId, botName)
       .then((bot) => {
         if (!bot) {
-          return Promise.resolve(undefined);
+          return Promise.resolve(false);
         }
-
-        bot.disabled = true;
-        return Promise.resolve(bot);
+        return Promise.resolve(true);
       });
   }
 
@@ -101,12 +151,12 @@ export class BotService implements IBotService {
       .then((bots) => {
         const statuses = new Array<BotStatus>();
         bots.forEach((bot) => {
-          let status = "off";
+          let status = Status.disconnected;
           if (bot.disabled) {
-            status = "disabled";
+            status = Status.disabled;
           }
           else if (this._botConnections[bot.id]) {
-            status = "on";
+            status = Status.connected;
           }
           statuses.push(new BotStatus(bot, status));
         });
@@ -121,18 +171,26 @@ export class BotService implements IBotService {
           return null;
         }
 
-        const connection = this._botConnections[bot.id];
-        if (!connection) {
+        if (bot.disabled) {
           return null;
         }
 
-        if (bot.disabled) {
+        const connection = this.getBotConnection(bot);
+        if (!connection) {
           return null;
         }
 
         connection.sendMessage(message, responseHandler);
         return bot;
       });
+  }
+
+  private getBotConnection(bot: Bot): BotConnection|null {
+    if (!bot) {
+      throw new ArgumentNullException("bot");
+    }
+
+    return this._botConnections[bot.id];
   }
 
   private async createBotSecret() : Promise<string> {

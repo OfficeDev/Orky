@@ -51,7 +51,7 @@ export class BotConnection extends EventEmitter {
           this._bot = bot;
 
           this._logger.info(`${bot.name} (${bot.id}) successfully registered.`);
-          socket.emit('registration_data', {id: bot.id, name: bot.name});
+          this.rename(bot.name);
           this.emit('registered', bot.id);
 
           this._socket.once('disconnect', () => {
@@ -80,5 +80,9 @@ export class BotConnection extends EventEmitter {
     }, this._responseTimeout, event);
 
     this._socket.emit('post_message', message);
+  }
+
+  rename(name: string): void {
+    this._socket.emit('registration_data', {id: this._bot.id, name: name});
   }
 }

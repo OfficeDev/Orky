@@ -5,10 +5,12 @@ export interface IBotResponseHandler { (response: BotResponse): void }
 
 export interface IBotService {
   establishConnection(socket: SocketIO.Socket): void;
-  registerBotWithName(teamId: string, botName: string): Promise<Bot|undefined>;
-  deregisterBotWithName(teamId: string, botName: string): Promise<Bot|undefined>;
-  enableBotWithName(teamId: string, botName: string): Promise<Bot|undefined> ;
-  disableBotWithName(teamId: string, botName: string): Promise<Bot|undefined>;
+  registerBotWithName(teamId: string, botName: string): Promise<Bot|null>;
+  deregisterBotWithName(teamId: string, botName: string): Promise<Bot|null>;
+  enableBotWithName(teamId: string, botName: string): Promise<Bot|null>;
+  disableBotWithName(teamId: string, botName: string): Promise<Bot|null>;
+  renameBot(teamId: string, fromName: string, toName: string): Promise<Bot|null>;
+  doesBotExist(teamId: string, botName: string) : Promise<boolean>;
   getBotStatuses(teamId: string): Promise<BotStatus[]>;
   sendMessageToBot(teamId: string, botName: string, message: BotMessage, responseHandler: IBotResponseHandler): Promise<Bot|null>;
 }
