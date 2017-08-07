@@ -1,16 +1,16 @@
 import {Session, Message, IMessage, IChatConnectorAddress, IIdentity} from "botbuilder";
-import {ArgumentNullException} from '../Errors';
+import {ArgumentNullException} from "../Errors";
 import {BotResponse} from "../Models";
-import {IBotResponseFormatter} from './Interfaces';
+import {IBotMessageFormatter} from "./Interfaces";
 
-export class BotResponseFormatter implements IBotResponseFormatter {
+export class BotMessageFormatter implements IBotMessageFormatter {
   private static imageRegExp = /^(https?:\/\/.+\/(.+)\.(jpg|png|gif|jpeg$))/;
 
   // Fixes the response to have the proper information that teams needs
   // 1. Replaces all slack @ mentions with Teams @ mentions
   //  Slack mentions take the form of <@[username or id]|[mention text]>
   //  We have to convert this into a mention object which needs the id.
-  prepareOutgoingMessages(session : Session, response: BotResponse) : IMessage[] {
+  toBotFrameworkMessage(session : Session, response: BotResponse) : IMessage[] {
     if (!response) {
       throw new ArgumentNullException('response');
     }
@@ -87,7 +87,7 @@ export class BotResponseFormatter implements IBotResponseFormatter {
     }
 
     // Basic image detection. If we can get the image without pinging the url, thats great!
-    const result = BotResponseFormatter.imageRegExp.exec(message);
+    const result = BotMessageFormatter.imageRegExp.exec(message);
     if(result) {
       return {
         contentUrl: result[1],

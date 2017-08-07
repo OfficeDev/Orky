@@ -13,6 +13,6 @@ export interface IBotService {
   sendMessageToBot(teamId: string, botName: string, message: BotMessage, responseHandler: IBotResponseHandler): Promise<Bot|null>;
 }
 
-export interface IBotResponseFormatter {
-  prepareOutgoingMessages(session : Session, response: BotResponse) : IMessage[];
+export interface IBotMessageFormatter {
+  toBotFrameworkMessage(session : Session, response: BotResponse) : IMessage[];
 }

@@ -7,7 +7,7 @@ import {Config} from "./config/Config";
 import {IConfig} from "./config/Interfaces";
 import {BotFileRepository} from "./repositories/BotRepository"
 import {BotService} from "./services/BotService"
-import {BotResponseFormatter} from "./services/BotResponseFormatter"
+import {BotMessageFormatter} from "./services/BotMessageFormatter"
 import {Dialogs} from "./Dialogs";
 import {ArgumentNullException} from "./Errors";
 
@@ -54,18 +54,17 @@ export class Orky {
         appPassword: this._config.MicrosoftAppPassword
     });
 
-    const universalBot = new UniversalBot(chatConnector);
+    
+    const botRepository = new BotFileRepository(this._logger, this._config.BotDataFilePath);
+    const botService = new BotService(botRepository, this._logger, this._config.BotResponseTimeout);
+    const botMessageFormatter = new BotMessageFormatter();
+    
+    const universalBot = Dialogs.register(chatConnector, botService, botMessageFormatter, this._logger);
     universalBot.use(new StripBotAtMentions());
     universalBot.set('localizerSettings', {
       defaultLocale: this._config.DefaultLocale,
       botLocalePath: this._config.LocalePath
     })
-    
-    const botRepository = new BotFileRepository(this._logger, this._config.BotDataFilePath);
-    const botService = new BotService(botRepository, this._logger, this._config.BotResponseTimeout);
-    const botResponseFormatter = new BotResponseFormatter();
-    const dialogs = new Dialogs(this._logger, botService, botResponseFormatter);
-    dialogs.use(universalBot);
 
     this._server = restify.createServer({
       name: this._config.Name,
