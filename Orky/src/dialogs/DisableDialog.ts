@@ -1,6 +1,6 @@
 import {ILogger} from "../logging/Interfaces";
 import {BaseDialog} from "./BaseDialog";
-import {Session, ThumbnailCard, CardImage, Message} from "botbuilder/lib/botbuilder";
+import {Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
 import {IBotService} from "../services/Interfaces";
 import {SessionUtils} from "../utils/SessionUtils";
 
@@ -12,7 +12,11 @@ export class DisableDialog extends BaseDialog {
     this._botService = botService;
   }
 
-  protected async performAction(session: Session, args?: any): Promise<void> {
+  protected buildDialog(): IDialogWaterfallStep {
+    return (session: Session) => this.performAction(session);
+  }
+
+  private async performAction(session: Session): Promise<void> {
     const incomingMessage = session.message.text || "";
     const match = this._triggerRegExp.exec(incomingMessage);
     if (!match) {
@@ -40,7 +44,7 @@ export class DisableDialog extends BaseDialog {
       .text("bot_disabled_text")
       .images([
         new CardImage(session)
-          .url(`${bot.thumbnailImageUri()}`)
+          .url(`${bot.iconUrl}`)
           .alt("bot_avatar_alt_text")
       ]);
 

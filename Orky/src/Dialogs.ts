@@ -7,6 +7,7 @@ import {RemoveDialog} from "./dialogs/RemoveDialog";
 import {AddDialog} from "./dialogs/AddDialog";
 import {DisableDialog} from "./dialogs/DisableDialog";
 import {EnableDialog} from "./dialogs/EnableDialog";
+import {RenameDialog} from "./dialogs/RenameDialog";
 import {StatusDialog} from "./dialogs/StatusDialog";
 import {TellDialog} from "./dialogs/TellDialog";
 
@@ -15,6 +16,7 @@ export class Dialogs {
   private static RemoveMatch = /^remove ([a-zA-Z0-9]{1,10})$/i;
   private static DisableMatch = /^disable ([a-zA-Z0-9]{1,10})$/i;
   private static EnableMatch = /^enable ([a-zA-Z0-9]{1,10})$/i;
+  private static RenameMatch = /^rename ([a-zA-Z0-9]{1,10}) to ([a-zA-Z0-9]{1,10})$/i;
   private static StatusMatch = /^status$/i;
   private static TellMatch = /^tell ([a-zA-Z0-9]{1,10}) (.+)$/i;
 
@@ -40,6 +42,7 @@ export class Dialogs {
     new AddDialog(botService, Dialogs.AddMatch, logger).register("/add", bot);
     new DisableDialog(botService, Dialogs.DisableMatch, logger).register("/disable", bot);
     new EnableDialog(botService, Dialogs.EnableMatch, logger).register("/enable", bot);
+    new RenameDialog(botService, Dialogs.RenameMatch, logger).register("/rename", bot);
     new StatusDialog(botService, Dialogs.StatusMatch, logger).register("/status", bot);
     new TellDialog(botService, botMessageFormatter, Dialogs.TellMatch, logger).register("/tell", bot);
     return bot;

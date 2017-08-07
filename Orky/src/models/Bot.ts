@@ -4,8 +4,9 @@ import {ArgumentNullException} from "../Errors";
 export class Bot {
   readonly teamId: string;
   readonly id: string;
-  readonly name: string;
   readonly secret: string;
+  iconUrl: string;
+  name: string;
   disabled: boolean;
 
   constructor(teamId: string, name: string, secret: string) {
@@ -24,9 +25,6 @@ export class Bot {
     this.name = name;
     this.secret = secret;
     this.disabled = false;
-  }
-
-  thumbnailImageUri(): string {
-    return `https://robohash.org/${this.id}?size=56x56`
+    this.iconUrl = `https://robohash.org/${this.id}?size=56x56`;
   }
 }
