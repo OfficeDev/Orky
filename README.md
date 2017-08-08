@@ -8,11 +8,9 @@ A script executor or OrkyBot as I call it is any service that speaks the Orky pr
 The most popular script executor for Orky is [Hubot](https://hubot.github.com/) with the [Hubot-Orky](https://github.com/MattSFT/Orky/tree/master/Hubot-Orky) adapter.
 
 ## Try Orky before installing in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
-You can try Orky by clicking this button:
+You can try Orky by clicking [here](https://teams.microsoft.com/l/chat/0/0?users=28:bbecaeee-a3b9-4ef3-91ab-7bb795977c8b).
 
-<a href='https://teams.microsoft.com/l/chat/0/0?users=28:bbecaeee-a3b9-4ef3-91ab-7bb795977c8b'><img src='https://dev.botframework.com/Client/Images/Add-To-MSTeams-Buttons.png'></a>
-
-This button will intiate a 1:1 conversation between Orky and you. You can register OrkyBots and interact with them as normal in the 1:1 context. Orky becomes much more pwoerful when used in a team so if you like it give it a shot by following the installation instructions below.
+This link will intiate a 1:1 conversation between Orky and you. You can register OrkyBots and interact with them as normal in the 1:1 context. Orky becomes much more pwoerful when used in a team so if you like it give it a shot by following the installation instructions below.
 
 ## How to install Orky in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
 1. Download the sideloadable application package from [here](https://github.com/MattSFT/Orky/raw/master/orky.zip).

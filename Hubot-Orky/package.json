@@ -1,7 +1,11 @@
 {
   "name": "hubot-orky",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Hubot adapter for orky",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MattSFT/Orky.git"
+  },
   "main": "src/Orky.coffee",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
