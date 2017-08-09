@@ -29,6 +29,7 @@ Requirements:
 ```bash
 npm install -g yo generator-hubot
 yo hubot
+npm install coffee-script --save
 ```
 
 2. Fill in the prompts appropriatly. For Adapter type 'orky'
