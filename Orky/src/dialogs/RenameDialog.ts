@@ -32,7 +32,7 @@ export class RenameDialog extends BaseDialog {
     }
     const fromName = match[1];
     const toName = match[2];
-    if (fromName == toName) {
+    if (fromName === toName) {
       session.send("bot_rename_same_name");
       return;
     }
@@ -42,7 +42,7 @@ export class RenameDialog extends BaseDialog {
       session.send("bot_not_registered", fromName);
       return;
     }
-    this._logger.info(`Renamed bot from '${fromName}' to '${bot.name}' to team '${bot.teamId}'`);
+    this._logger.info(`Renamed bot from '${fromName}' to '${bot.name}' in team '${bot.teamId}'`);
 
     const botCard = new ThumbnailCard(session)
       .title("bot_renamed_title", fromName, bot.name)

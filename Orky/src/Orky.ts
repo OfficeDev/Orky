@@ -4,8 +4,11 @@ import {UniversalBot, ChatConnector, IMiddlewareMap, IEvent, Session} from "botb
 import {ConsoleLogger} from "./logging/ConsoleLogger";
 import {ILogger} from "./logging/Interfaces";
 import {Config} from "./config/Config";
-import {IConfig} from "./config/Interfaces";
-import {BotFileRepository} from "./repositories/BotRepository"
+import {StorageType,IConfig} from "./config/Interfaces";
+import {BotRepository} from "./repositories/BotRepository"
+import {IDataStorage} from "./repositories/Interfaces"
+import {FileStorage} from "./repositories/FileStorage"
+import {MemoryStorage} from "./repositories/MemoryStorage"
 import {BotService} from "./services/BotService"
 import {BotMessageFormatter} from "./services/BotMessageFormatter"
 import {Dialogs} from "./Dialogs";
@@ -97,8 +100,16 @@ export class Orky {
       appPassword: this._config.MicrosoftAppPassword
     });
 
-    const botRepository = new BotFileRepository(this._logger, this._config.BotDataFilePath);
-    const botService = new BotService(botRepository, this._logger, this._config.BotResponseTimeout);
+    let botStorage: IDataStorage;
+    if (this._config.BotDataStorageType === StorageType.File) {
+      botStorage = new FileStorage(this._logger, this._config.BotDataFilePath);
+    }
+    else {
+      botStorage = new MemoryStorage(this._logger);
+    }
+
+    const botRepository = new BotRepository(botStorage, this._logger);
+    const botService = new BotService(botRepository, this._logger, this._config.BotResponseTimeout, this._config.BotKeepDuration);
     const botMessageFormatter = new BotMessageFormatter();
     
     const universalBot = Dialogs.register(chatConnector, botService, botMessageFormatter, this._logger);

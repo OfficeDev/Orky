@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import {InvalidOperationException} from "../Errors";
-import {IConfig} from "./Interfaces";
+import {IConfig, StorageType} from "./Interfaces";
 
 export class Config implements IConfig {
   readonly Name: string;
@@ -12,6 +12,8 @@ export class Config implements IConfig {
   readonly MessagesEndpoint: string;
   readonly DefaultLocale: string;
   readonly LocalePath: string;
+  readonly BotDataStorageType: StorageType;
+  readonly BotKeepDuration: number;
   readonly BotDataFilePath: string;
   readonly LogLevel: number | string;
   readonly BotResponseTimeout: number;
@@ -45,12 +47,35 @@ export class Config implements IConfig {
     this.MessagesEndpoint = process.env.MESSAGES_ENDPOINT || "/api/messages";
     this.DefaultLocale = process.env.DEFAULT_LOCALE || "en";
     this.LocalePath = process.env.LOCALE_PATH || "./locale";
+    this.BotKeepDuration = this.parseInt(process.env.BOT_KEEP_DURATION, 0);
+    this.BotDataStorageType = this.parseStorageType(process.env.BOT_DATA_STORAGE_TYPE, StorageType.Memory);
     this.BotDataFilePath = process.env.BOT_DATA_FILE_PATH || "./BotData.json";
     this.LogLevel = process.env.LOG_LEVEL || "info";
-    let botResponseTimeout = 10000;
-    if (process.env.BOT_RESPONSE_TIMEOUT as string) {
-      botResponseTimeout = parseInt(process.env.BOT_RESPONSE_TIMEOUT as string) || botResponseTimeout;
+    this.BotResponseTimeout = this.parseInt(process.env.BOT_RESPONSE_TIMEOUT, 10000);
+  }
+
+  parseStorageType(envParam: any, defaultValue: StorageType) : StorageType {
+    let value = defaultValue;
+    if (envParam as string) {
+      switch ((envParam as string).toLowerCase()) {
+        case "0":
+        case "memory":
+          value = StorageType.Memory;
+          break;
+        case "1":
+        case "file":
+          value = StorageType.File;
+          break;
+      }
     }
-    this.BotResponseTimeout = botResponseTimeout;
+    return value;
+  }
+
+  parseInt(envParam: any, defaultValue: number) : number {
+    let value = defaultValue;
+    if (envParam as string) {
+      value = parseInt(envParam as string) || value; 
+    }
+    return value;
   }
 }
