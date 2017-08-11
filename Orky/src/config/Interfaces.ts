@@ -3,6 +3,7 @@ export interface IConfig {
   readonly Version: string;
   readonly MicrosoftAppId: string;
   readonly MicrosoftAppPassword: string;
+  readonly MicrosoftTenantFilter: string[];
   readonly ServerPort: string;
   readonly MessagesEndpoint: string;
   readonly DefaultLocale: string;

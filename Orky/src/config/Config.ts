@@ -7,6 +7,7 @@ export class Config implements IConfig {
   readonly Version: string;
   readonly MicrosoftAppId: string;
   readonly MicrosoftAppPassword: string;
+  readonly MicrosoftTenantFilter: string[];
   readonly ServerPort: string;
   readonly MessagesEndpoint: string;
   readonly DefaultLocale: string;
@@ -35,6 +36,11 @@ export class Config implements IConfig {
     }
     this.MicrosoftAppPassword = process.env.MICROSOFT_APP_PASSWORD as string;
 
+    this.MicrosoftTenantFilter = [];
+    if (process.env.MICROSOFT_TENANT_FILTER) {
+      this.MicrosoftTenantFilter = (process.env.MICROSOFT_TENANT_FILTER as string).trim().split(",");
+    }
+    
     this.ServerPort = process.env.PORT || "3978";
     this.MessagesEndpoint = process.env.MESSAGES_ENDPOINT || "/api/messages";
     this.DefaultLocale = process.env.DEFAULT_LOCALE || "en";
