@@ -9,11 +9,19 @@ class Orky extends Adapter
   constructor: (@robot) ->
     super(@robot)
 
-    @orkyUri = process.env.ORKY_URI || "https://scriptorbot.azurewebsites.net"
-    @botId = process.env.BOT_ID
-    @botSecret = process.env.BOT_SECRET
+    if !process.env.ORKY_URI
+      throw new Error("Environment variable 'ORKY_URI' not set.")
+    if !process.env.BOT_ID
+      throw new Error("Environment variable 'BOT_ID' not set.")
+    if !process.env.BOT_SECRET
+      throw new Error("Environment variable 'BOT_SECRET' not set.")
 
-    @robot.logger.info "Constructor"
+    @config =
+      OrkyUri: process.env.ORKY_URI
+      BotId: process.env.BOT_ID
+      BotSecret: process.env.BOT_SECRET
+
+    @robot.logger.info "Created instance of Orky Adapter with config: #{JSON.stringify(this._config, null, 2)}"
 
   run: ->
     @robot.logger.info "Run"
@@ -24,12 +32,12 @@ class Orky extends Adapter
       @client.destroy()
       @client = null
     
-    @client = SocketIO(@orkyUri)
+    @client = SocketIO(@config.OrkyUri)
     @client.once('connect', () =>
       @robot.logger.info("Connected to Orky")
       @client.emit('register',
-        id: @botId,
-        secret: @botSecret)
+        id: @config.BotId,
+        secret: @config.BotSecret)
     )
 
     @client.once('no_registration', () =>

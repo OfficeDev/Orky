@@ -11,9 +11,10 @@ export class BotService implements IBotService {
   private _botRepository: IBotRepository;
   private _logger: ILogger;
   private _responseTimeout: number;
+  private _botKeepDuration: number;
   private _botConnections: {[key:string]: BotConnection};
 
-  constructor(botRepository: IBotRepository, logger: ILogger, responseTimeout: number) {
+  constructor(botRepository: IBotRepository, logger: ILogger, responseTimeout: number, botKeepDuration: number) {
     if (!botRepository) {
       throw new ArgumentNullException("botRepository");
     }
@@ -24,6 +25,7 @@ export class BotService implements IBotService {
     this._botConnections = {};
     this._logger = logger;
     this._responseTimeout = responseTimeout;
+    this._botKeepDuration = botKeepDuration;
   }
 
   establishConnection(socket: SocketIO.Socket): void {
@@ -53,8 +55,24 @@ export class BotService implements IBotService {
         return this.createBotSecret()
           .then((secret) => {
             const bot = new Bot(teamId, botName, secret);
-            return this._botRepository.save(bot);
+            return this._botRepository.save(bot)
           })
+      })
+      .then((bot) => {
+        if (bot && this._botKeepDuration) {
+          setTimeout((botId: string) => {
+            // Delete the bot
+            this._botRepository.deleteById(botId)
+              .then((bot) => {
+                // Kill the connection
+                if (this._botConnections[botId]) {
+                  this._botConnections[botId].disconnect();
+                }
+                delete this._botConnections[botId];
+              });
+          }, this._botKeepDuration, bot.id);
+        }
+        return bot;
       });
   }
 
@@ -66,7 +84,7 @@ export class BotService implements IBotService {
           return Promise.resolve(null);
         }
 
-        return this._botRepository.delete(bot);
+        return this._botRepository.deleteById(bot.id);
       });
   }
 
