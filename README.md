@@ -8,7 +8,7 @@ A script executor or OrkyBot as I call it is any service that speaks the Orky pr
 The most popular script executor for Orky is [Hubot](https://hubot.github.com/) with the [Hubot-Orky](https://github.com/MattSFT/Orky/tree/master/Hubot-Orky) adapter.
 
 ## Try Orky before deploying your own instance in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
-You can try Orky by sideloading this [package]() into any one of your teams. Then you can talk to Orky in any channel by typing @OrkyDemo. This demo bot has no guaranteed uptime, no guaranteed security, and deletes any bots you register against it every 30 minutes or if the server restarts.
+You can try Orky by sideloading this [package](https://github.com/MattSFT/Orky/raw/master/OrkyDemoManifest/OrkyDemoManifest.zip) into any one of your teams. Then you can talk to Orky in any channel by typing @OrkyDemo. This demo bot has no guaranteed uptime, no guaranteed security, and deletes any bots you register against it every 30 minutes or if the server restarts.
 
 ## How to deploy your own Orky instance and install it in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
 This guide is written for an Azure oriented audience but should outline the general steps of creating an Orky instance.
