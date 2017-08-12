@@ -21,7 +21,7 @@ class Orky extends Adapter
       BotId: process.env.BOT_ID
       BotSecret: process.env.BOT_SECRET
 
-    @robot.logger.info "Created instance of Orky Adapter with config: #{JSON.stringify(this._config, null, 2)}"
+    @robot.logger.info "Created instance of Orky Adapter with config: #{JSON.stringify(@config, null, 2)}"
 
   run: ->
     @robot.logger.info "Run"
