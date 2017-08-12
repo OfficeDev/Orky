@@ -8,9 +8,7 @@ A script executor or OrkyBot as I call it is any service that speaks the Orky pr
 The most popular script executor for Orky is [Hubot](https://hubot.github.com/) with the [Hubot-Orky](https://github.com/MattSFT/Orky/tree/master/Hubot-Orky) adapter.
 
 ## Try Orky before deploying your own instance in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
-You can try Orky by clicking [here](https://teams.microsoft.com/l/chat/0/0?users=28:64fd7505-1b73-43bf-a26e-08a3a60a1a44).
-
-This link will intiate a 1:1 conversation between Orky and you. You can register OrkyBots and interact with them as normal in the 1:1 context. Orky becomes much more powerful when used in a team so if you like it give it a shot by following the deployment and installation instructions below.
+You can try Orky by sideloading this [package]() into any one of your teams. Then you can talk to Orky in any channel by typing @OrkyDemo. This demo bot has no guaranteed uptime, no guaranteed security, and deletes any bots you register against it every 30 minutes or if the server restarts.
 
 ## How to deploy your own Orky instance and install it in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
 This guide is written for an Azure oriented audience but should outline the general steps of creating an Orky instance.
@@ -78,10 +76,9 @@ Azure should now pull down the code from github and run the deployment script to
 1. Copy the files in OrkyDemoManifest
 2. Change the coloricon.png to an 96x96 png icon you like.
 3. Change the outlineicon.png to a 20x20 png icon you like.
-4. Update manifest.json and replace all instances of ```<MICROSOFT_APP_ID>``` with your app id.
-5. Update manfiest.json and replace all instances of ```<BOT_NAME>``` with your bot name.
-6. Take all three files (manifest.json, coloricon.png, outlineicon.png) and zip them into the root level of a zip archive. Make sure that the files are at the root level and not inside of a folder inside the zip archive.
-7. Sideload this zip into any team of your choice using this [guide](https://msdn.microsoft.com/en-us/microsoft-teams/sideload).
+4. Update manifest.json and replace "id" and "botId" with your app id.
+5. Take all three files (manifest.json, coloricon.png, outlineicon.png) and zip them into the root level of a zip archive. Make sure that the files are at the root level and not inside of a folder inside the zip archive.
+6. Sideload this zip into any team of your choice using this [guide](https://msdn.microsoft.com/en-us/microsoft-teams/sideload).
 
 ## How to add your own OrkyBot?
 This guide can help you add your own bot using the [Hubot](https://hubot.github.com/) framework.

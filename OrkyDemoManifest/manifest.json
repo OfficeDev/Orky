@@ -1,7 +1,7 @@
 {
     "manifestVersion": "1.0",
     "version": "1.0",
-    "id": "bbecaeee-a3b9-4ef3-91ab-7bb795977c8b",
+    "id": "64fd7505-1b73-43bf-a26e-08a3a60a1a44",
     "packageName": "mattsft.orky",
     "developer": {
         "name": "Matt Stankiewicz",
@@ -24,7 +24,7 @@
     "accentColor": "#FFFFED",
     "bots": [
         {
-            "botId": "bbecaeee-a3b9-4ef3-91ab-7bb795977c8b",
+            "botId": "64fd7505-1b73-43bf-a26e-08a3a60a1a44",
             "isNotificationOnly": false,
             "scopes": [
                 "team",
