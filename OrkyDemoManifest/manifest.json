@@ -29,7 +29,43 @@
             "scopes": [
                 "team",
                 "personal"
-            ]
+            ],
+			"commandLists":[
+			{
+				"scopes":[
+					"team",
+					"personal"
+				],
+				"commands":[
+				{
+					"title":"add ",
+					"description":"Adds a bot with the given name. The name can only contain alphanumeric characters (a-z, A-Z, and 0-9)."
+				},
+				{
+					"title":"remove ",
+					"description":"Removes a bot with the given name."
+				},
+				{
+					"title":"enable ",
+					"description":"Enables a bot."
+				},
+				{
+					"title":"disable ",
+					"description":"Disables a bot."
+				},
+				{
+					"title":"rename ",
+					"description":"Renames a bot."
+				},
+				{
+					"title":"status",
+					"description":"Shows the status of your bots."
+				},
+				{
+					"title":"tell ",
+					"description":"Tells a bot to execute a command."
+				}]
+			}]
         }
     ]
 }
