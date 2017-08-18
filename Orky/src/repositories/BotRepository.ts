@@ -5,7 +5,7 @@ import {ILogger} from "../logging/Interfaces";
 
 export class BotRepository implements IBotRepository {
   private _botsByTeamAndName: any;
-  private _botsById: any;
+  private _botsById: {[key: string]: Bot};
   private _storage: IDataStorage;
   private _logger: ILogger
 
@@ -34,16 +34,20 @@ export class BotRepository implements IBotRepository {
 
     const originalBot = this._botsById[bot.id];
     if (originalBot && originalBot.name.toLowerCase() !== bot.name.toLowerCase()) {
-      delete this._botsByTeamAndName[originalBot.teamId][originalBot.name.toLowerCase()];
+      originalBot.teamId.forEach((teamId) => {
+        delete this._botsByTeamAndName[teamId][originalBot.name.toLowerCase()];
+      });
     }
 
     this._botsById[bot.id] = bot;
-    let teamMap = this._botsByTeamAndName[bot.teamId]
-    if (!teamMap) {
-      teamMap = {};
-      this._botsByTeamAndName[bot.teamId] = teamMap;
-    }
-    teamMap[bot.name.toLowerCase()] = bot;
+    bot.teamId.forEach((teamId) => {
+      let teamMap = this._botsByTeamAndName[teamId]
+      if (!teamMap) {
+        teamMap = {};
+        this._botsByTeamAndName[teamId] = teamMap;
+      }
+      teamMap[bot.name.toLowerCase()] = bot;
+    });
 
     return this.saveData()
       .then(() => bot);
@@ -58,7 +62,9 @@ export class BotRepository implements IBotRepository {
       .then((bot) => {
         if (bot) {
           delete this._botsById[bot.id];
-          delete this._botsByTeamAndName[bot.teamId][bot.name.toLowerCase()];
+          bot.teamId.forEach((teamId) => {
+            delete this._botsByTeamAndName[teamId][bot.name.toLowerCase()];
+          });
         }
         
       return this.saveData()
@@ -126,12 +132,14 @@ export class BotRepository implements IBotRepository {
       bot.iconUrl = value.iconUrl || bot.iconUrl;
       (bot as any).id = value.id; // force the id
       this._botsById[value.id] = bot;
-      let teamMap = this._botsByTeamAndName[bot.teamId]
-      if (!teamMap) {
-        teamMap = {};
-        this._botsByTeamAndName[bot.teamId] = teamMap;
-      }
-      teamMap[bot.name.toLowerCase()] = bot;
+      bot.teamId.forEach((teamId) => {
+        let teamMap = this._botsByTeamAndName[teamId]
+        if (!teamMap) {
+          teamMap = {};
+          this._botsByTeamAndName[teamId] = teamMap;
+        }
+        teamMap[bot.name.toLowerCase()] = bot;
+      });
     }
 
     this._logger.info(`Loaded ${Object.values(this._botsById).length} bots.`);

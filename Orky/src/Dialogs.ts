@@ -9,6 +9,8 @@ import {DisableDialog} from "./dialogs/DisableDialog";
 import {EnableDialog} from "./dialogs/EnableDialog";
 import {RenameDialog} from "./dialogs/RenameDialog";
 import {StatusDialog} from "./dialogs/StatusDialog";
+import {CopyDialog} from "./dialogs/CopyDialog";
+import {PasteDialog} from "./dialogs/PasteDialog";
 import {TellDialog} from "./dialogs/TellDialog";
 
 export class Dialogs {
@@ -18,6 +20,8 @@ export class Dialogs {
   private static EnableMatch = /^enable ([a-zA-Z0-9]{1,10})$/i;
   private static RenameMatch = /^rename ([a-zA-Z0-9]{1,10}) to ([a-zA-Z0-9]{1,10})$/i;
   private static StatusMatch = /^status$/i;
+  private static CopyMatch = /^copy ([a-zA-Z0-9]{1,10})$/i;
+  private static PasteMatch = /^paste (.*)/i;  
   private static TellMatch = /^tell ([a-zA-Z0-9]{1,10}) (.+)$/i;
 
   static register(connector: ChatConnector, botService: IBotService, botMessageFormatter: IBotMessageFormatter, logger: ILogger) : UniversalBot {
@@ -35,6 +39,7 @@ export class Dialogs {
     }
 
     const bot = new UniversalBot(connector, (session: Session) => {
+      console.log(JSON.stringify(session.message, null, 2));
       session.send("unmatched_response");
       session.endDialog();
     });
@@ -44,6 +49,8 @@ export class Dialogs {
     new EnableDialog(botService, Dialogs.EnableMatch, logger).register("/enable", bot);
     new RenameDialog(botService, Dialogs.RenameMatch, logger).register("/rename", bot);
     new StatusDialog(botService, Dialogs.StatusMatch, logger).register("/status", bot);
+    new CopyDialog(botService, Dialogs.CopyMatch, logger).register("/copy", bot);
+    new PasteDialog(botService, Dialogs.PasteMatch, logger).register("/paste", bot);
     new TellDialog(botService, botMessageFormatter, Dialogs.TellMatch, logger).register("/tell", bot);
     return bot;
   }

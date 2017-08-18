@@ -34,9 +34,8 @@ export class BaseDialog {
 
     dialogActions = dialogActions.map((action) => this.wrapAction(action));
     if (dialogActions.length > 0) {
-      let lastAction = dialogActions[dialogActions.length-1];
-      lastAction = this.wrapFinalAction(lastAction);
-      dialogActions[dialogActions.length-1] = lastAction;
+      const lastAction = dialogActions[dialogActions.length-1];
+      dialogActions[dialogActions.length-1] = this.wrapFinalAction(lastAction);
     }
 
     bot.dialog(name, dialogActions)
@@ -60,11 +59,18 @@ export class BaseDialog {
 
   private wrapFinalAction(action: IDialogWaterfallStep): IDialogWaterfallStep {
     return (session: Session, args?: any) => {
-      const result = action(session, args);
-      if (typeof result.then === "function") {
-        result.then(() => {
-          session.endDialog();
-        })
+      let result = action(session, args);
+      if (typeof result.then === "function" || typeof result.catch === "function") {
+        if (typeof result.then === "function") {
+          result = result.then(() => {
+            session.endDialog();
+          })
+        }
+        if (typeof result.catch === "function") {
+          result.catch(() => {
+            session.endDialog();
+          })
+        }
       }
       else {
         session.endDialog();

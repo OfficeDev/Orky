@@ -13,6 +13,7 @@ export class BotService implements IBotService {
   private _responseTimeout: number;
   private _botKeepDuration: number;
   private _botConnections: {[key:string]: BotConnection};
+  private _botIdCopies: {[key:string]: string};
 
   constructor(botRepository: IBotRepository, logger: ILogger, responseTimeout: number, botKeepDuration: number) {
     if (!botRepository) {
@@ -26,13 +27,15 @@ export class BotService implements IBotService {
     this._logger = logger;
     this._responseTimeout = responseTimeout;
     this._botKeepDuration = botKeepDuration;
+    this._botIdCopies = {};
   }
 
   establishConnection(socket: SocketIO.Socket): void {
     const connection = new BotConnection(socket, this._botRepository, this._responseTimeout, this._logger);
     connection.once('registered', (botId) => {
       if (this._botConnections[botId]) {
-          this._botConnections[botId].disconnect();
+        this._logger.info(`Disconnecting ${botId} in favor of new connection.`); 
+        this._botConnections[botId].disconnect();
       }
       this._botConnections[botId] = connection;
 
@@ -52,7 +55,7 @@ export class BotService implements IBotService {
           return Promise.resolve(null);
         }
         
-        return this.createBotSecret()
+        return this.createBotSecret(24)
           .then((secret) => {
             const bot = new Bot(teamId, botName, secret);
             return this._botRepository.save(bot)
@@ -84,7 +87,12 @@ export class BotService implements IBotService {
           return Promise.resolve(null);
         }
 
-        return this._botRepository.deleteById(bot.id);
+        bot.removeFromTeam(teamId);
+        if (bot.teamId.length === 0) {
+          return this._botRepository.deleteById(bot.id);
+        }
+        
+        return bot;
       });
   }
 
@@ -153,17 +161,6 @@ export class BotService implements IBotService {
       });
   }
 
-  async doesBotExist(teamId: string, botName: string) : Promise<boolean> {
-    return this._botRepository
-      .findByTeamAndName(teamId, botName)
-      .then((bot) => {
-        if (!bot) {
-          return Promise.resolve(false);
-        }
-        return Promise.resolve(true);
-      });
-  }
-
   async getBotStatuses(teamId: string): Promise<BotStatus[]> {
     return this._botRepository.getAllByTeam(teamId)
       .then((bots) => {
@@ -203,6 +200,50 @@ export class BotService implements IBotService {
       });
   }
 
+  async copyBot(teamId: string, botName: string) : Promise<string|null> {
+    return this._botRepository
+      .findByTeamAndName(teamId, botName)
+      .then((bot) => {
+        if (!bot) {
+          return Promise.resolve(null);
+        }
+
+        return this.createBotSecret(5)
+          .then((secret) => {
+            this._botIdCopies[secret] = bot.id;
+            return secret;
+          });
+      });
+  }
+
+  async pasteBot(teamId: string, copyId: string) : Promise<Bot|null> {
+    const botId = this._botIdCopies[copyId];
+    delete this._botIdCopies[copyId];
+
+    if (!botId) {
+      return null;
+    }
+
+    return this._botRepository.findById(botId)
+      .then((bot) => {
+        if (!bot) {
+          return Promise.resolve(null);
+        }
+
+        return this._botRepository
+          .findByTeamAndName(teamId, bot.name)
+          .then((existingBot) => {
+            if (existingBot) {
+              return Promise.resolve(null);
+            }
+
+            bot.addToTeam(teamId);
+            return this._botRepository
+              .save(bot);
+          });
+      });
+  }
+  
   private getBotConnection(bot: Bot): BotConnection|null {
     if (!bot) {
       throw new ArgumentNullException("bot");
@@ -211,9 +252,9 @@ export class BotService implements IBotService {
     return this._botConnections[bot.id];
   }
 
-  private async createBotSecret() : Promise<string> {
+  private async createBotSecret(length: number) : Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      crypto.randomBytes(24, (error, buffer) => {
+      crypto.randomBytes(length, (error, buffer) => {
         if (error) {
           return reject(error);
         }

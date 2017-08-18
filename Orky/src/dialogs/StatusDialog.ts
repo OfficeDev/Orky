@@ -26,7 +26,7 @@ export class StatusDialog extends BaseDialog {
     }
 
     const statuses = await this._botService.getBotStatuses(teamId);
-    if (statuses.length === 0) {
+    if (statuses.length === 0) {     
       session.send("no_bots");
       return;
     }

@@ -10,9 +10,10 @@ export interface IBotService {
   enableBotWithName(teamId: string, botName: string): Promise<Bot|null>;
   disableBotWithName(teamId: string, botName: string): Promise<Bot|null>;
   renameBot(teamId: string, fromName: string, toName: string): Promise<Bot|null>;
-  doesBotExist(teamId: string, botName: string) : Promise<boolean>;
   getBotStatuses(teamId: string): Promise<BotStatus[]>;
   sendMessageToBot(teamId: string, botName: string, message: BotMessage, responseHandler: IBotResponseHandler): Promise<Bot|null>;
+  copyBot(teamId: string, botName: string) : Promise<string|null>;
+  pasteBot(teamId: string, copyId: string) : Promise<Bot|null>;
 }
 
 export interface IBotMessageFormatter {

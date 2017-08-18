@@ -19,6 +19,10 @@
   "bot_status_connected" : "connected",
   "bot_status_disconnected" : "disconnected",
   "bot_status_disabled" : "disabled",
+  "bot_copied": "Bot %s has been copied. Paste key is %s.",
+  "bot_pasted_title": "%s has been pasted!",
+  "bot_pasted_text" : "Id <b>%s</b><br/>Secret <b>%s</b>",
+  "bot_not_found_with_secret": "You don't have a bot with copy secret %s",
   "bot_avatar_alt_text": "Bot Avatar",
   "bot_not_registered": "I couldn't register a bot named %s."
 }

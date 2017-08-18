@@ -54,6 +54,14 @@
 					"description":"Disables a bot."
 				},
 				{
+					"title":"copy ",
+					"description":"Copies a bot and returns the copy key."
+				},
+				{
+					"title":"paste ",
+					"description":"Pastes a bot referenced by the copy key into this team."
+				},
+				{
 					"title":"rename ",
 					"description":"Renames a bot."
 				},

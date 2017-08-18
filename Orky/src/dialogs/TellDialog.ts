@@ -40,7 +40,7 @@ export class TellDialog extends BaseDialog {
     const sender = SessionUtils.extractSender(session);
     const conversation = session.message.address.conversation;
     const conversationId = conversation ? conversation.id : sender.id;
-    const botMessage = new BotMessage(message, teamId, "threadId", conversationId, sender)
+    const botMessage = new BotMessage(message, teamId, "threadId", conversationId, sender);
 
     const responseHandler = (response: BotResponse) => {
       const messages = this._botMessageFormatter.toBotFrameworkMessage(session, response);
@@ -52,7 +52,7 @@ export class TellDialog extends BaseDialog {
 
     const bot =
       await this._botService.sendMessageToBot(teamId, botName, botMessage, responseHandler);
-
+      
     if (!bot) {
       session.send("bot_not_found", botName);
       return;
