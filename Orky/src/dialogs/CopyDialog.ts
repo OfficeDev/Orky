@@ -1,9 +1,10 @@
-import {ILogger} from "../logging/Interfaces";
-import {BaseDialog} from "./BaseDialog";
 import {Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
 import {InvalidOperationException} from "../Errors";
-import {IBotService} from "../services/Interfaces";
-import {SessionUtils} from "../utils/SessionUtils";
+import {IBotService} from "../Services";
+import {SessionUtils} from "../Utils";
+import {ILogger} from "../Logging";
+import {BotNotFoundException} from "../ServiceErrors";
+import BaseDialog from "./BaseDialog";
 
 export class CopyDialog extends BaseDialog {
   private _botService : IBotService;
@@ -28,17 +29,27 @@ export class CopyDialog extends BaseDialog {
 
     const teamId = SessionUtils.extractTeamId(session);
     if (!teamId) {
+      this._logger.error(`Failed to extract team id from copy message. message='${session.message}'`);      
       session.send("cannot_extract_team_id");
       return;
     }
+
     const botName = match[1];
-    const copyString = await this._botService.copyBot(teamId, botName);
-    if (!copyString) {
-      session.send("bot_not_found", botName);
-      return;
+    let copyString: string;
+    try {
+      copyString = await this._botService.copyBot(teamId, botName);
+    }
+    catch (error) {
+      if (error instanceof BotNotFoundException) {
+        session.send("bot_not_found_error", botName);
+        return;
+      }
+      this._logger.error(error);
+      throw error;
     }
 
     this._logger.info(`Copied bot named '${botName}' in team '${teamId}'`);
     session.send("bot_copied", botName, copyString);
   }
 }
+export default CopyDialog;

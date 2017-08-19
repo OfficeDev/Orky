@@ -7,8 +7,9 @@ export interface IDataStorage {
 
 export interface IBotRepository {
   save(bot: Bot): Promise<Bot>;
-  deleteById(botId: string): Promise<Bot|null>;
-  findById(botId: string): Promise<Bot|null>;
-  findByTeamAndName(teamId: string, botName: string): Promise<Bot|null>;
+  deleteById(botId: string): Promise<Bot>;
+  findById(botId: string): Promise<Bot>;
+  findByTeamAndName(teamId: string, botName: string): Promise<Bot>;
+  exists(teamId: string, botName: string): Promise<boolean>;
   getAllByTeam(teamId: string): Promise<Bot[]>;
 }

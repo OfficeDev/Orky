@@ -1,10 +1,10 @@
-import {ILogger} from "../logging/Interfaces";
-import {BaseDialog} from "./BaseDialog";
 import {Session, ThumbnailCard, CardImage, Message, AttachmentLayout, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
-import {Status} from "../Models";
+import {BotStatus} from "../Models";
 import {InvalidOperationException} from "../Errors";
-import {IBotService} from "../services/Interfaces";
-import {SessionUtils} from "../utils/SessionUtils";
+import {IBotService} from "../Services";
+import {SessionUtils} from "../Utils";
+import {ILogger} from "../Logging";
+import BaseDialog from "./BaseDialog";
 
 export class StatusDialog extends BaseDialog {
   private _botService : IBotService;
@@ -21,6 +21,7 @@ export class StatusDialog extends BaseDialog {
   private async performAction(session: Session): Promise<void> {
     const teamId = SessionUtils.extractTeamId(session);
     if (!teamId) {
+      this._logger.error(`Failed to extract team id from status message. message='${session.message}'`);
       session.send("cannot_extract_team_id");
       return;
     }
@@ -36,7 +37,7 @@ export class StatusDialog extends BaseDialog {
       return new ThumbnailCard(session)
         .title("bot_status_title",
           bot.name,
-          session.gettext(`bot_status_${Status[status.status]}`)
+          session.gettext(`bot_status_${status.status}`)
         )
         .text("bot_status_text", bot.id, bot.secret)
         .images([
@@ -53,3 +54,4 @@ export class StatusDialog extends BaseDialog {
     session.send(message);
   }
 }
+export default StatusDialog;

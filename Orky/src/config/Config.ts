@@ -9,6 +9,7 @@ export class Config implements IConfig {
   readonly MicrosoftAppPassword: string;
   readonly MicrosoftTenantFilter: string[];
   readonly ServerPort: string;
+  readonly BotConnectionEndpoint: string;
   readonly MessagesEndpoint: string;
   readonly DefaultLocale: string;
   readonly LocalePath: string;
@@ -45,6 +46,7 @@ export class Config implements IConfig {
     
     this.ServerPort = process.env.PORT || "3978";
     this.MessagesEndpoint = process.env.MESSAGES_ENDPOINT || "/api/messages";
+    this.BotConnectionEndpoint = process.env.BOT_CONNECTION_ENDPOINT || "/socket.io";
     this.DefaultLocale = process.env.DEFAULT_LOCALE || "en";
     this.LocalePath = process.env.LOCALE_PATH || "./locale";
     this.BotKeepDuration = this.parseInt(process.env.BOT_KEEP_DURATION, 0);
@@ -79,3 +81,4 @@ export class Config implements IConfig {
     return value;
   }
 }
+export default Config;

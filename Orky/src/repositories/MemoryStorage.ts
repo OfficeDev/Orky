@@ -22,3 +22,4 @@ export class MemoryStorage implements IDataStorage {
     return Promise.resolve(this._data || {});
   }
 }
+export default MemoryStorage;

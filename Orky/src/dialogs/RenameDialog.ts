@@ -1,8 +1,10 @@
-import {ILogger} from "../logging/Interfaces";
-import {BaseDialog} from "./BaseDialog";
 import {Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
-import {IBotService} from "../services/Interfaces";
-import {SessionUtils} from "../utils/SessionUtils";
+import {IBotService} from "../Services";
+import {SessionUtils} from "../Utils";
+import {ILogger} from "../Logging";
+import {Bot} from "../Models";
+import {BotNotFoundException, BotAlreadyExistsException} from "../ServiceErrors";
+import BaseDialog from "./BaseDialog";
 
 export class RenameDialog extends BaseDialog {
   private _botService : IBotService;
@@ -27,6 +29,7 @@ export class RenameDialog extends BaseDialog {
 
     const teamId = SessionUtils.extractTeamId(session);
     if (!teamId) {
+      this._logger.error(`Failed to extract team id from add message. message='${session.message}'`);      
       session.send("cannot_extract_team_id");
       return;
     }
@@ -37,11 +40,23 @@ export class RenameDialog extends BaseDialog {
       return;
     }
 
-    const bot = await this._botService.renameBot(teamId, fromName, toName);
-    if (!bot) {
-      session.send("bot_not_registered", fromName);
-      return;
+    let bot: Bot;
+    try {
+      bot = await this._botService.renameBot(teamId, fromName, toName);
     }
+    catch (error) {
+      if (error instanceof BotNotFoundException) {
+        session.send("bot_not_found_error", fromName);
+        return;
+      }
+      if (error instanceof BotAlreadyExistsException) {
+        session.send("bot_rename_already_exists_error", toName, fromName);
+        return;
+      }
+      this._logger.error(error);
+      throw error;
+    }
+
     this._logger.info(`Renamed bot from '${fromName}' to '${bot.name}' in team '${bot.teamId}'`);
 
     const botCard = new ThumbnailCard(session)
@@ -56,3 +71,4 @@ export class RenameDialog extends BaseDialog {
     session.send(message);
   }
 }
+export default RenameDialog;

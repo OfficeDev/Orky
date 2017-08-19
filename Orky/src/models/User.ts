@@ -16,3 +16,4 @@ export class User {
     this.name = name;
   }
 }
+export default User;

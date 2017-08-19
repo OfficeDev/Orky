@@ -99,3 +99,4 @@ export class BotMessageFormatter implements IBotMessageFormatter {
     return null;
   }
 }
+export default BotMessageFormatter;

@@ -41,3 +41,4 @@ export class Bot {
     this.teamId = this.teamId.filter((t) => t !== teamId);
   }
 }
+export default Bot;

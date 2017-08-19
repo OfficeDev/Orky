@@ -1,9 +1,11 @@
-import {ILogger} from "../logging/Interfaces";
-import {BaseDialog} from "./BaseDialog";
 import {Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
 import {InvalidOperationException} from "../Errors";
-import {IBotService} from "../services/Interfaces";
-import {SessionUtils} from "../utils/SessionUtils";
+import {IBotService} from "../Services";
+import {SessionUtils} from "../Utils";
+import {ILogger} from "../Logging";
+import {Bot} from "../Models";
+import {BotNotFoundException} from "../ServiceErrors";
+import BaseDialog from "./BaseDialog";
 
 export class EnableDialog extends BaseDialog {
   private _botService : IBotService;
@@ -28,14 +30,22 @@ export class EnableDialog extends BaseDialog {
 
     const teamId = SessionUtils.extractTeamId(session);
     if (!teamId) {
+      this._logger.error(`Failed to extract team id from enable message. message='${session.message}'`);            
       session.send("cannot_extract_team_id");
       return;
     }
     const botName = match[1];
-    const bot = await this._botService.enableBotWithName(teamId, botName);
-    if (!bot) {
-      session.send("bot_not_found", botName);
-      return;
+    let bot: Bot;
+    try {
+      bot = await this._botService.enableBotWithName(teamId, botName);
+    }
+    catch (error) {
+      if (error instanceof BotNotFoundException) {
+        session.send("bot_not_found_error", botName);
+        return;
+      }
+      this._logger.error(error);
+      throw error;
     }
 
     this._logger.info(`Enabled bot named '${bot.name}' in team '${bot.teamId}'`);
@@ -53,3 +63,4 @@ export class EnableDialog extends BaseDialog {
     session.send(message);
   }
 }
+export default EnableDialog;

@@ -2,6 +2,7 @@ import {ArgumentNullException, InvalidOperationException} from "../Errors";
 import {Bot} from "../Models";
 import {IDataStorage, IBotRepository} from "./Interfaces";
 import {ILogger} from "../logging/Interfaces";
+import {BotNotFoundException} from "../ServiceErrors";
 
 export class BotRepository implements IBotRepository {
   private _botsByTeamAndName: any;
@@ -49,38 +50,39 @@ export class BotRepository implements IBotRepository {
       teamMap[bot.name.toLowerCase()] = bot;
     });
 
-    return this.saveData()
-      .then(() => bot);
+    await this.saveData();
+    return this.cloneBot(bot);
   }
 
-  async deleteById(botId: string): Promise<Bot|null> {
+  async deleteById(botId: string): Promise<Bot> {
     if (!botId) {
       throw new ArgumentNullException("botId");
     }
 
-    return this.findById(botId)
-      .then((bot) => {
-        if (bot) {
-          delete this._botsById[bot.id];
-          bot.teamId.forEach((teamId) => {
-            delete this._botsByTeamAndName[teamId][bot.name.toLowerCase()];
-          });
-        }
-        
-      return this.saveData()
-      .then(() => bot);
-      });
+    const bot = await this.findById(botId);
+    delete this._botsById[bot.id];
+    bot.teamId.forEach((teamId) => {
+      delete this._botsByTeamAndName[teamId][bot.name.toLowerCase()];
+    });
+    
+    await this.saveData();
+    return bot;
   }
 
-  async findById(botId: string): Promise<Bot|null> {
+  async findById(botId: string): Promise<Bot> {
     if (!botId) {
       throw new ArgumentNullException("botId");
     }
 
-    return this.cloneBot(this._botsById[botId]);
+    const bot = this._botsById[botId];
+    if (!bot) {
+      throw new BotNotFoundException(botId);
+    }
+
+    return this.cloneBot(bot);
   }
 
-  async findByTeamAndName(teamId: string, botName: string): Promise<Bot|null> {
+  async findByTeamAndName(teamId: string, botName: string): Promise<Bot> {
     if (!teamId) {
       throw new ArgumentNullException("teamId");
     }
@@ -88,11 +90,15 @@ export class BotRepository implements IBotRepository {
       throw new ArgumentNullException("botName");
     }
 
-    if (this._botsByTeamAndName[teamId]) {
+    if (await this.exists(teamId, botName)) {
       return this.cloneBot(this._botsByTeamAndName[teamId][botName.toLowerCase()]);
     }
 
-    return null;
+    throw new BotNotFoundException(botName, teamId);
+  }
+
+  async exists(teamId: string, botName: string): Promise<boolean> {
+    return this._botsByTeamAndName[teamId] && this._botsByTeamAndName[teamId][botName.toLowerCase()];
   }
 
   async getAllByTeam(teamId: string): Promise<Bot[]> {
@@ -145,3 +151,4 @@ export class BotRepository implements IBotRepository {
     this._logger.info(`Loaded ${Object.values(this._botsById).length} bots.`);
   }
 }
+export default BotRepository;

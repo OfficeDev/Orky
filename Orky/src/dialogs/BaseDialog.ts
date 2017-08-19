@@ -1,8 +1,8 @@
 import {UniversalBot, Session, IDialogWaterfallStep} from "botbuilder";
-import {ILogger} from "../logging/Interfaces";
+import {ILogger} from "../Logging";
 import {ArgumentNullException, InvalidOperationException} from "../Errors";
 
-export class BaseDialog {
+export abstract class BaseDialog {
   protected _triggerRegExp: RegExp;
   protected _logger: ILogger;
 
@@ -78,7 +78,6 @@ export class BaseDialog {
     };
   }
 
-  protected buildDialog() : IDialogWaterfallStep[]|IDialogWaterfallStep {
-    return [];
-  }
+  protected abstract buildDialog() : IDialogWaterfallStep[]|IDialogWaterfallStep;
 }
+export default BaseDialog;
