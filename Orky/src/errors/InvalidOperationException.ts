@@ -3,3 +3,4 @@ export class InvalidOperationException extends Error {
     super(message);
   }
 }
+export default InvalidOperationException;

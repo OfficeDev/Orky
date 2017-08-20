@@ -1,7 +1,7 @@
 {
     "manifestVersion": "1.0",
     "version": "1.0",
-    "id": "64fd7505-1b73-43bf-a26e-08a3a60a1a44",
+    "id": "8b808ef4-1043-4d0b-9e9c-b622db85bee3",
     "packageName": "mattsft.orky",
     "developer": {
         "name": "Matt Stankiewicz",
@@ -10,7 +10,7 @@
         "termsOfUseUrl": "https://github.com/MattSFT/Orky/blob/master/terms.md"
     },
     "name": {
-        "short": "Orky",
+        "short": "Orky (Dev)",
         "full": "Orky - The Orchestrator"
     },
     "description": {
@@ -24,7 +24,7 @@
     "accentColor": "#FFFFED",
     "bots": [
         {
-            "botId": "64fd7505-1b73-43bf-a26e-08a3a60a1a44",
+            "botId": "8b808ef4-1043-4d0b-9e9c-b622db85bee3",
             "isNotificationOnly": false,
             "scopes": [
                 "team",

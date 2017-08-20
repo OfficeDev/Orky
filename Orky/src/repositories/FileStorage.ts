@@ -53,3 +53,4 @@ export class FileStorage implements IDataStorage {
     });
   }
 }
+export default FileStorage;

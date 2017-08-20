@@ -1,6 +1,6 @@
 import {v4 as uuid} from "uuid";
 import {ArgumentNullException} from "../Errors";
-import {User} from "./User";
+import User from "./User";
 
 export class BotMessage {
   readonly id: string;
@@ -41,3 +41,4 @@ export class BotMessage {
     this.sender = sender;
   }
 }
+export default BotMessage;

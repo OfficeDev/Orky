@@ -1,19 +1,12 @@
 import * as restify from "restify";
 import * as SocketIO from "socket.io";
 import {UniversalBot, ChatConnector, IMiddlewareMap, IEvent, Session} from "botbuilder";
-import {ConsoleLogger} from "./logging/ConsoleLogger";
-import {ILogger} from "./logging/Interfaces";
-import {Config} from "./config/Config";
-import {StorageType,IConfig} from "./config/Interfaces";
-import {BotRepository} from "./repositories/BotRepository"
-import {IDataStorage} from "./repositories/Interfaces"
-import {FileStorage} from "./repositories/FileStorage"
-import {MemoryStorage} from "./repositories/MemoryStorage"
-import {BotService} from "./services/BotService"
-import {BotMessageFormatter} from "./services/BotMessageFormatter"
+import {ConsoleLogger, ILogger} from "./Logging";
+import {Config, IConfig, StorageType} from "./Config";
+import {BotRepository, IDataStorage, FileStorage, MemoryStorage} from "./Repositories";
+import {BotConnectionManager, BotService, BotMessageFormatter} from "./Services"
 import {Dialogs} from "./Dialogs";
 import {ArgumentNullException} from "./Errors";
-
 
 // Strip bot mentions from the message text
 class TenantFilterMiddleware implements IMiddlewareMap {
@@ -109,7 +102,8 @@ export class Orky {
     }
 
     const botRepository = new BotRepository(botStorage, this._logger);
-    const botService = new BotService(botRepository, this._logger, this._config.BotResponseTimeout, this._config.BotKeepDuration);
+    const botConnectionManager = new BotConnectionManager(botRepository, this._config.BotResponseTimeout, this._logger);
+    const botService = new BotService(botRepository, botConnectionManager, this._logger, this._config.BotKeepDuration);
     const botMessageFormatter = new BotMessageFormatter();
     
     const universalBot = Dialogs.register(chatConnector, botService, botMessageFormatter, this._logger);
@@ -122,17 +116,33 @@ export class Orky {
 
     this._server = restify.createServer({
       name: this._config.Name,
-      version: this._config.Version
+      version: this._config.Version,
+      socketio: true
     });
     this._server.post(this._config.MessagesEndpoint, chatConnector.listen());
-    
-    const io = SocketIO.listen((this._server as any).server);
-    this._server.listen(this._config.ServerPort, () => {
-      this._logger.info(`${this._server.name} listening to ${this._server.url}`); 
+
+    const io = SocketIO(this._server, {
+      path: this._config.BotConnectionEndpoint
+    });
+
+    io.use((socket, next) => {
+      botService.authorizeConnection(socket)
+        .then(() => next())
+        .catch((error) => {
+          this._logger.error(error);
+          next(error)
+        });
     });
 
     io.on('connection', (socket) => {
-      botService.establishConnection(socket);
+      botService.establishConnection(socket)
+        .catch((error) => {
+          this._logger.error(error);
+        });
+    });
+
+    this._server.listen(this._config.ServerPort, () => {
+      this._logger.info(`${this._server.name} listening to ${this._server.url}`); 
     });
 
     this._logger.info("Orky is running");

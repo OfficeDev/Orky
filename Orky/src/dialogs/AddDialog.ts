@@ -1,8 +1,10 @@
-import {ILogger} from "../logging/Interfaces";
-import {BaseDialog} from "./BaseDialog";
 import {Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
-import {IBotService} from "../services/Interfaces";
-import {SessionUtils} from "../utils/SessionUtils";
+import {IBotService} from "../Services";
+import {ILogger} from "../Logging";
+import {SessionUtils} from "../Utils";
+import {Bot} from "../Models";
+import {BotAlreadyExistsException} from "../ServiceErrors";
+import BaseDialog from "./BaseDialog";
 
 export class AddDialog extends BaseDialog {
   private _botService : IBotService;
@@ -20,22 +22,31 @@ export class AddDialog extends BaseDialog {
     const incomingMessage = session.message.text || "";
     const match = this._triggerRegExp.exec(incomingMessage);
     if (!match) {
-      this._logger.error(`Failed to extract bot name from register message.  message='${session.message.text}'`);
+      this._logger.error(`Failed to extract bot name from add message. message='${session.message.text}'`);
       session.send("cannot_extract_bot_name");
       return;
     }
 
     const teamId = SessionUtils.extractTeamId(session);
     if (!teamId) {
+      this._logger.error(`Failed to extract team id from add message. message='${session.message}'`);
       session.send("cannot_extract_team_id");
       return;
     }
     const botName = match[1];
-    const bot = await this._botService.registerBotWithName(teamId, botName);
-    if (!bot) {
-      session.send("bot_not_registered", botName);
-      return;
+    let bot: Bot;
+    try {
+      bot = await this._botService.registerBotWithName(teamId, botName);
     }
+    catch (error) {
+      if (error instanceof BotAlreadyExistsException) {
+        session.send("bot_register_already_exists_error", botName);
+        return;
+      }
+      this._logger.error(error);
+      throw error;
+    }
+
     this._logger.info(`Added bot named '${bot.name}' to team '${bot.teamId}'`);
 
     const botCard = new ThumbnailCard(session)
@@ -50,3 +61,4 @@ export class AddDialog extends BaseDialog {
     session.send(message);
   }
 }
+export default AddDialog;

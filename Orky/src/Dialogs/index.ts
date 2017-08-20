@@ -1,28 +1,27 @@
 import {ChatConnector, UniversalBot, Session} from "botbuilder";
-import {ArgumentNullException, InvalidOperationException} from './Errors'
-import {ILogger} from './logging/Interfaces';
-import {IBotService, IBotMessageFormatter} from "./services/Interfaces";
-
-import {RemoveDialog} from "./dialogs/RemoveDialog";
-import {AddDialog} from "./dialogs/AddDialog";
-import {DisableDialog} from "./dialogs/DisableDialog";
-import {EnableDialog} from "./dialogs/EnableDialog";
-import {RenameDialog} from "./dialogs/RenameDialog";
-import {StatusDialog} from "./dialogs/StatusDialog";
-import {CopyDialog} from "./dialogs/CopyDialog";
-import {PasteDialog} from "./dialogs/PasteDialog";
-import {TellDialog} from "./dialogs/TellDialog";
+import {ArgumentNullException, InvalidOperationException} from '../Errors'
+import {ILogger} from '../Logging';
+import {IBotService, IBotMessageFormatter} from "../Services";
+import RemoveDialog from "./RemoveDialog";
+import AddDialog from "./AddDialog";
+import DisableDialog from "./DisableDialog";
+import EnableDialog from "./EnableDialog";
+import RenameDialog from "./RenameDialog";
+import StatusDialog from "./StatusDialog";
+import CopyDialog from "./CopyDialog";
+import PasteDialog from "./PasteDialog";
+import TellDialog from "./TellDialog";
 
 export class Dialogs {
-  private static AddMatch = /^add ([a-zA-Z0-9]{1,10})$/i;
-  private static RemoveMatch = /^remove ([a-zA-Z0-9]{1,10})$/i;
-  private static DisableMatch = /^disable ([a-zA-Z0-9]{1,10})$/i;
-  private static EnableMatch = /^enable ([a-zA-Z0-9]{1,10})$/i;
-  private static RenameMatch = /^rename ([a-zA-Z0-9]{1,10}) to ([a-zA-Z0-9]{1,10})$/i;
-  private static StatusMatch = /^status$/i;
-  private static CopyMatch = /^copy ([a-zA-Z0-9]{1,10})$/i;
-  private static PasteMatch = /^paste (.*)/i;  
-  private static TellMatch = /^tell ([a-zA-Z0-9]{1,10}) (.+)$/i;
+  private static AddMatch = /^add\s+([a-zA-Z0-9]{1,10})\s*$/i;
+  private static RemoveMatch = /^remove\s+([a-zA-Z0-9]{1,10})\s*$/i;
+  private static DisableMatch = /^disable\s+([a-zA-Z0-9]{1,10})\s*$/i;
+  private static EnableMatch = /^enable\s+([a-zA-Z0-9]{1,10})\s*$/i;
+  private static RenameMatch = /^rename\s+([a-zA-Z0-9]{1,10})\s+to\s+([a-zA-Z0-9]{1,10})\s*$/i;
+  private static StatusMatch = /^status\s*$/i;
+  private static CopyMatch = /^copy\s+([a-zA-Z0-9]{1,10})\s*$/i;
+  private static PasteMatch = /^paste\s+([a-zA-Z0-9]{1,8})\s*$/i;  
+  private static TellMatch = /^tell\s+([a-zA-Z0-9]{1,10})(?:\s(?:to\s)?(.+))$/i;
 
   static register(connector: ChatConnector, botService: IBotService, botMessageFormatter: IBotMessageFormatter, logger: ILogger) : UniversalBot {
     if (!connector) {
@@ -39,7 +38,7 @@ export class Dialogs {
     }
 
     const bot = new UniversalBot(connector, (session: Session) => {
-      console.log(JSON.stringify(session.message, null, 2));
+      logger.debug(`Received message=${JSON.stringify(session.message, null,2)}`);
       session.send("unmatched_response");
       session.endDialog();
     });
@@ -55,3 +54,4 @@ export class Dialogs {
     return bot;
   }
 }
+export default Dialogs;

@@ -1,9 +1,11 @@
-import {ILogger} from "../logging/Interfaces";
-import {BaseDialog} from "./BaseDialog";
 import {Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
 import {InvalidOperationException} from "../Errors";
-import {IBotService} from "../services/Interfaces";
-import {SessionUtils} from "../utils/SessionUtils";
+import {IBotService} from "../Services";
+import {SessionUtils} from "../Utils";
+import {ILogger} from "../Logging";
+import {Bot} from "../Models";
+import {BotNotFoundException, BotAlreadyExistsException, CopyKeyNotFoundException} from "../ServiceErrors";
+import BaseDialog from "./BaseDialog";
 
 export class PasteDialog extends BaseDialog {
   private _botService : IBotService;
@@ -28,15 +30,29 @@ export class PasteDialog extends BaseDialog {
 
     const teamId = SessionUtils.extractTeamId(session);
     if (!teamId) {
+      this._logger.error(`Failed to extract team id from paste message. message='${session.message}'`);                  
       session.send("cannot_extract_team_id");
       return;
     }
     const copySecret = match[1];
-    console.log(`'${copySecret}'`);
-    const bot = await this._botService.pasteBot(teamId, copySecret);
-    if (!bot) {
-      session.send("bot_not_found_with_secret", copySecret);
-      return;
+    let bot: Bot;
+    try {
+      bot = await this._botService.pasteBot(teamId, copySecret);
+    }
+    catch (error) {
+      if (error instanceof BotNotFoundException) {
+        session.send("bot_not_found_by_copy_key_error", copySecret);
+        return;
+      }
+      else if (error instanceof CopyKeyNotFoundException) {
+        session.send("bot_not_found_by_copy_key_error", copySecret);
+        return;
+      }
+      else if (error instanceof BotAlreadyExistsException) {
+        session.send("bot_paste_already_exists_error", copySecret);        
+      }
+      this._logger.error(error);
+      throw error;
     }
 
     this._logger.info(`Pasted bot named '${bot.name}' in team '${bot.teamId}'`);
@@ -54,3 +70,4 @@ export class PasteDialog extends BaseDialog {
     session.send(message);
   }
 }
+export default PasteDialog;

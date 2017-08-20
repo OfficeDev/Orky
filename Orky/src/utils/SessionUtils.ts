@@ -29,3 +29,4 @@ export class SessionUtils {
       session.message.address.user.name || "");
   }
 }
+export default SessionUtils;

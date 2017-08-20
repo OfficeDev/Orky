@@ -16,3 +16,4 @@ export class BotResponse {
     this.messages = messages;
   }
 }
+export default BotResponse;

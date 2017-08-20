@@ -1,267 +1,178 @@
 import * as crypto from 'crypto';
 import * as SocketIO from "socket.io";
 import {ArgumentNullException, ArgumentException} from "../Errors";
-import {Bot, BotStatus, Status, BotMessage, BotResponse} from "../Models";
-import {ILogger} from "../logging/Interfaces";
-import {IBotRepository} from "../repositories/Interfaces";
-import {IBotResponseHandler, IBotService} from "./Interfaces";
-import {BotConnection} from "./BotConnection";
+import {Bot, BotStatus, BotMessage, BotResponse} from "../Models";
+import {ILogger} from "../Logging";
+import {IBotRepository} from "../Repositories";
+import {IBotConnectionManager, IBotResponseHandler, IBotService} from "./Interfaces";
+import {BotNotFoundException, BotAlreadyExistsException, BotIsDisabledException, CopyKeyNotFoundException, BotNotConnectedException} from "../ServiceErrors";
 
 export class BotService implements IBotService {
   private _botRepository: IBotRepository;
+  private _botConnectionManager: IBotConnectionManager;
   private _logger: ILogger;
-  private _responseTimeout: number;
   private _botKeepDuration: number;
-  private _botConnections: {[key:string]: BotConnection};
   private _botIdCopies: {[key:string]: string};
 
-  constructor(botRepository: IBotRepository, logger: ILogger, responseTimeout: number, botKeepDuration: number) {
+  constructor(
+    botRepository: IBotRepository,
+    botConnectionManager: IBotConnectionManager,
+    logger: ILogger,
+    botKeepDuration: number) {
     if (!botRepository) {
       throw new ArgumentNullException("botRepository");
+    }
+    if (!botConnectionManager) {
+      throw new ArgumentNullException("botConnectionManager");
     }
     if (!logger) {
       throw new ArgumentNullException("logger");
     }
     this._botRepository = botRepository;
-    this._botConnections = {};
+    this._botConnectionManager = botConnectionManager;
     this._logger = logger;
-    this._responseTimeout = responseTimeout;
     this._botKeepDuration = botKeepDuration;
     this._botIdCopies = {};
   }
 
-  establishConnection(socket: SocketIO.Socket): void {
-    const connection = new BotConnection(socket, this._botRepository, this._responseTimeout, this._logger);
-    connection.once('registered', (botId) => {
-      if (this._botConnections[botId]) {
-        this._logger.info(`Disconnecting ${botId} in favor of new connection.`); 
-        this._botConnections[botId].disconnect();
-      }
-      this._botConnections[botId] = connection;
-
-      connection.once('disconnected', (botId) => {
-        if (botId && connection === this._botConnections[botId]) {
-          delete this._botConnections[botId];
-        }
-      });
-    });
+  authorizeConnection(socket: SocketIO.Socket): Promise<void> {
+    return this._botConnectionManager.authorizeConnection(socket);
   }
 
-  async registerBotWithName(teamId: string, botName: string): Promise<Bot|null> {
-    return this._botRepository
-      .findByTeamAndName(teamId, botName)
-      .then((bot) => {
-        if (bot) {
-          return Promise.resolve(null);
-        }
-        
-        return this.createBotSecret(24)
-          .then((secret) => {
-            const bot = new Bot(teamId, botName, secret);
-            return this._botRepository.save(bot)
-          })
-      })
-      .then((bot) => {
-        if (bot && this._botKeepDuration) {
-          setTimeout((botId: string) => {
-            // Delete the bot
-            this._botRepository.deleteById(botId)
-              .then((bot) => {
-                // Kill the connection
-                if (this._botConnections[botId]) {
-                  this._botConnections[botId].disconnect();
-                }
-                delete this._botConnections[botId];
-              });
-          }, this._botKeepDuration, bot.id);
-        }
-        return bot;
-      });
+  async establishConnection(socket: SocketIO.Socket): Promise<void> {
+    const botId = await this._botConnectionManager.establishConnection(socket);
+    const bot = await this._botRepository.findById(botId);
+    await this._botConnectionManager.rename(bot.id, bot.name);
   }
 
-  async deregisterBotWithName(teamId: string, botName: string): Promise<Bot|null> {
-    return this._botRepository
-      .findByTeamAndName(teamId, botName)
-      .then((bot) => {
-        if (!bot) {
-          return Promise.resolve(null);
-        }
+  async registerBotWithName(teamId: string, botName: string): Promise<Bot> {
+    if(await this._botRepository.exists(teamId, botName)) {
+      throw new BotAlreadyExistsException(botName, teamId);
+    }
+    
+    const secret = await this.createRandomKey(32);
+    let bot = new Bot(teamId, botName, secret);
+    bot = await this._botRepository.save(bot);
 
-        bot.removeFromTeam(teamId);
-        if (bot.teamId.length === 0) {
-          return this._botRepository.deleteById(bot.id);
-        }
-        
-        return bot;
-      });
+    if (this._botKeepDuration) {
+      setTimeout(async (botId: string) => {
+        await this._botRepository.deleteById(botId)
+        await this._botConnectionManager.disconnect(botId);
+      }, this._botKeepDuration, bot.id);
+    }
+    return bot;
   }
 
-  async enableBotWithName(teamId: string, botName: string): Promise<Bot|null> {
-    return this._botRepository
-      .findByTeamAndName(teamId, botName)
-      .then((bot) => {
-        if (!bot) {
-          return Promise.resolve(null);
-        }
-
-        bot.disabled = false;
-        return this._botRepository.save(bot);
-      });
+  async deregisterBotWithName(teamId: string, botName: string): Promise<Bot> {
+    const bot = await this._botRepository.findByTeamAndName(teamId, botName);
+    bot.removeFromTeam(teamId);
+    if (bot.teamId.length === 0) {
+      await this._botRepository.deleteById(bot.id);
+      await this._botConnectionManager.disconnect(bot.id);
+    }
+    return bot;
   }
 
-  async disableBotWithName(teamId: string, botName: string): Promise<Bot|null> {
-    return this._botRepository
-      .findByTeamAndName(teamId, botName)
-      .then((bot) => {
-        if (!bot) {
-          return Promise.resolve(null);
-        }
-
-        bot.disabled = true;
-        return this._botRepository.save(bot);
-      });
+  async enableBotWithName(teamId: string, botName: string): Promise<Bot> {
+    const bot = await this._botRepository.findByTeamAndName(teamId, botName);
+    bot.disabled = false;
+    return await this._botRepository.save(bot);
   }
 
-  async renameBot(teamId: string, fromName: string, toName: string): Promise<Bot|null> {
-    return this._botRepository
-      .findByTeamAndName(teamId, toName)
-      .then((bot) => {
+  async disableBotWithName(teamId: string, botName: string): Promise<Bot> {
+    const bot = await this._botRepository.findByTeamAndName(teamId, botName);
+    bot.disabled = true;
+    return await this._botRepository.save(bot);
+  }
+
+  async renameBot(teamId: string, fromName: string, toName: string): Promise<Bot> {
+    let bot = await this._botRepository.findByTeamAndName(teamId, fromName);
+    await Promise.all(bot.teamId.map(async (teamId) => {
+      if(await this._botRepository.exists(teamId, toName)) {
         // Fail if there is another bot with the same toName.
         // If the toName is the same as the bot's name and only casing is different
         // then we should rename it still.
-        if (bot) {
-          if (bot.name.toLowerCase() === toName.toLowerCase()) {
-            return bot;
-          }
-          return Promise.resolve(null);
+        if (fromName.toLowerCase() !== toName.toLowerCase()) {
+          throw new BotAlreadyExistsException(toName, teamId);
         }
-
-        return this._botRepository
-          .findByTeamAndName(teamId, fromName);
-      })
-      .then((bot) => {
-        if (!bot) {
-          return Promise.resolve(null);
-        }
-
-        bot.name = toName;
-        return this._botRepository.save(bot);
-      })
-      .then((bot) => {
-        if (!bot) {
-          return Promise.resolve(null);
-        }
-
-        const connection = this.getBotConnection(bot);
-        if (connection) {
-          connection.rename(toName);
-        }
-
-        return Promise.resolve(bot);
-      });
+      }
+    }));
+    
+    bot.name = toName;
+    bot = await this._botRepository.save(bot);
+    try {
+      await this._botConnectionManager.rename(bot.id, bot.name);
+    }
+    catch(error) {
+      // Ignore. Bot will get the rename when it reconnects.
+      if (!(error instanceof BotNotConnectedException)) {
+        throw error;
+      }
+    }
+    return bot;
   }
 
   async getBotStatuses(teamId: string): Promise<BotStatus[]> {
-    return this._botRepository.getAllByTeam(teamId)
-      .then((bots) => {
-        const statuses = new Array<BotStatus>();
-        bots.forEach((bot) => {
-          let status = Status.disconnected;
-          if (bot.disabled) {
-            status = Status.disabled;
-          }
-          else if (this._botConnections[bot.id]) {
-            status = Status.connected;
-          }
-          statuses.push(new BotStatus(bot, status));
-        });
-        return statuses;
-      });
+    const bots = await this._botRepository.getAllByTeam(teamId);
+    const statuses = await Promise.all(bots.map(async (bot) => {
+      let status = BotStatus.DISCONNECTED;
+      if (bot.disabled) {
+        status = BotStatus.DISABLED;
+      }
+      else if (await this._botConnectionManager.isConnected(bot.id)) {
+        status = BotStatus.CONNECTED;
+      }
+      return new BotStatus(bot, status);
+    }));
+    return statuses;
   }
 
-  async sendMessageToBot(teamId: string, botName: string, message: BotMessage, responseHandler: IBotResponseHandler): Promise<Bot|null> {
-    return this._botRepository.findByTeamAndName(teamId, botName)
-      .then((bot) => {
-        if (!bot) {
-          return null;
-        }
+  async sendMessageToBot(teamId: string, botName: string, message: BotMessage, responseHandler: IBotResponseHandler): Promise<Bot> {
+    const bot = await this._botRepository.findByTeamAndName(teamId, botName);
+    if (bot.disabled) {
+      throw new BotIsDisabledException(bot.id);
+    }
 
-        if (bot.disabled) {
-          return null;
-        }
-
-        const connection = this.getBotConnection(bot);
-        if (!connection) {
-          return null;
-        }
-
-        connection.sendMessage(message, responseHandler);
-        return bot;
-      });
+    await this._botConnectionManager.sendMessage(bot.id, message, responseHandler);
+    return bot;
   }
 
-  async copyBot(teamId: string, botName: string) : Promise<string|null> {
-    return this._botRepository
-      .findByTeamAndName(teamId, botName)
-      .then((bot) => {
-        if (!bot) {
-          return Promise.resolve(null);
-        }
-
-        return this.createBotSecret(5)
-          .then((secret) => {
-            this._botIdCopies[secret] = bot.id;
-            return secret;
-          });
-      });
+  async copyBot(teamId: string, botName: string) : Promise<string> {
+    const bot = await this._botRepository.findByTeamAndName(teamId, botName)
+    const copyKey = await this.createRandomKey(6);
+    this._botIdCopies[copyKey] = bot.id;
+    return copyKey;
   }
 
-  async pasteBot(teamId: string, copyId: string) : Promise<Bot|null> {
-    const botId = this._botIdCopies[copyId];
-    delete this._botIdCopies[copyId];
+  async pasteBot(teamId: string, copyKey: string) : Promise<Bot> {
+    const botId = this._botIdCopies[copyKey];
+    delete this._botIdCopies[copyKey];
 
     if (!botId) {
-      return null;
+      throw new CopyKeyNotFoundException(copyKey);
     }
 
-    return this._botRepository.findById(botId)
-      .then((bot) => {
-        if (!bot) {
-          return Promise.resolve(null);
-        }
-
-        return this._botRepository
-          .findByTeamAndName(teamId, bot.name)
-          .then((existingBot) => {
-            if (existingBot) {
-              return Promise.resolve(null);
-            }
-
-            bot.addToTeam(teamId);
-            return this._botRepository
-              .save(bot);
-          });
-      });
-  }
-  
-  private getBotConnection(bot: Bot): BotConnection|null {
-    if (!bot) {
-      throw new ArgumentNullException("bot");
+    const bot = await this._botRepository.findById(botId);
+    if(await this._botRepository.exists(teamId, bot.name)) {
+      throw new BotAlreadyExistsException(bot.name, teamId);
     }
 
-    return this._botConnections[bot.id];
+    bot.addToTeam(teamId);
+    return await this._botRepository.save(bot);
   }
 
-  private async createBotSecret(length: number) : Promise<string> {
+  private createRandomKey(length: number) : Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      crypto.randomBytes(length, (error, buffer) => {
+      const bytes = Math.ceil(length * 3 / 4.0); // (4/3)*bytes = base64 string length.
+      crypto.randomBytes(bytes, (error, buffer) => {
         if (error) {
           return reject(error);
         }
 
-        const secret = buffer.toString('base64').replace(/\/|\+|=/g, "");
+        const secret = buffer.toString('base64').replace(/\/|\+|=/g, "A");
         return resolve(secret);
       });
     });
   }
 }
+export default BotService;

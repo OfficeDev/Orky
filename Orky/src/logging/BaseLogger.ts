@@ -1,58 +1,65 @@
+import {ArgumentOutOfRangeException} from "../Errors";
 import {ILogger} from "./Interfaces";
 
-export class BaseLogger implements ILogger {
-  public static Debug = 0;
-  public static Info = 1;
-  public static Warning = 2;
-  public static Error = 3;
-  public static None = 4;
+export abstract class BaseLogger implements ILogger {
+  static DEBUG = 0;
+  static INFO = 1;
+  static WARNING = 2;
+  static ERROR = 3;
+  static NONE = 4;
 
   private _logLevel: number;
 
   constructor(logLevel?: number | string) {
     if (!logLevel) {
-      logLevel = BaseLogger.Info;
+      this._logLevel = BaseLogger.INFO;
     }
-
-    if(typeof logLevel === 'string') {
-      switch(logLevel.toLowerCase()) {
-        case 'debug':
-          logLevel = BaseLogger.Debug;
-          break;
-        case 'warning':
-          logLevel = BaseLogger.Warning;
-          break;
-        case 'error':
-          logLevel = BaseLogger.Error;
-          break;
-        case 'info':
-        default:
-          logLevel = BaseLogger.Info;
-      }
+    else if(typeof logLevel === 'string') {
+      this._logLevel = this.parseLogLevelString(logLevel);
     }
-    this._logLevel = logLevel;
+    else {
+      this._logLevel = logLevel;
+    }
   }
 
-  info(message: string): void {
-    if(this._logLevel <= BaseLogger.Info) {
+  info(message: string|Error): void {
+    if(this._logLevel <= BaseLogger.INFO) {
       this.logMessage("Info", message);
     }
   }
-  warn(message: string): void {
-    if(this._logLevel <= BaseLogger.Warning) {
+  warn(message: string|Error): void {
+    if(this._logLevel <= BaseLogger.WARNING) {
       this.logMessage("Warn", message);
     }
   }
-  debug(message: string): void {
-    if(this._logLevel <= BaseLogger.Debug) {
+  debug(message: string|Error): void {
+    if(this._logLevel <= BaseLogger.DEBUG) {
       this.logMessage("Debug", message);
     }
   }
-  error(message: string): void {
-    if(this._logLevel <= BaseLogger.Error) {
+  error(message: string|Error): void {
+    if(this._logLevel <= BaseLogger.ERROR) {
       this.logMessage("Error", message);
     }
   }
 
-  protected logMessage(severity: string, message: string): void {}
+  protected abstract logMessage(severity: string, message: string|Error): void;
+
+  private parseLogLevelString(logLevel: string): number {
+    switch(logLevel.toLowerCase()) {
+      case 'debug':
+        return BaseLogger.DEBUG;
+      case 'info':
+        return BaseLogger.INFO;
+      case 'warning':
+        return BaseLogger.WARNING;
+      case 'error':
+        return BaseLogger.ERROR;
+      case 'none':
+        return BaseLogger.NONE;
+      default:
+        throw new ArgumentOutOfRangeException("logLevel", logLevel, ["debug", "info", "warning", "error", "none"]);
+    }
+  }
 }
+export default BaseLogger;

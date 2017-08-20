@@ -1,10 +1,12 @@
-import {ILogger} from "../logging/Interfaces";
-import {BaseDialog} from "./BaseDialog";
 import {Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
 import {InvalidOperationException} from "../Errors";
 import {BotMessage, BotResponse} from "../Models";
-import {IBotService, IBotMessageFormatter} from "../services/Interfaces";
-import {SessionUtils} from "../utils/SessionUtils";
+import {IBotService, IBotMessageFormatter} from "../Services";
+import {SessionUtils} from "../Utils";
+import {ILogger} from "../Logging";
+import {Bot} from "../Models";
+import {BotNotConnectedException, BotIsDisabledException, BotNotFoundException} from "../ServiceErrors";
+import BaseDialog from "./BaseDialog";
 
 export class TellDialog extends BaseDialog {
   private _botService : IBotService;
@@ -31,6 +33,7 @@ export class TellDialog extends BaseDialog {
     
     const teamId = SessionUtils.extractTeamId(session);
     if (!teamId) {
+      this._logger.error(`Failed to extract team id from tell message. message='${session.message}'`);      
       session.send("cannot_extract_team_id");
       return;
     }
@@ -43,6 +46,7 @@ export class TellDialog extends BaseDialog {
     const botMessage = new BotMessage(message, teamId, "threadId", conversationId, sender);
 
     const responseHandler = (response: BotResponse) => {
+      this._logger.debug(`Replying with message=${JSON.stringify(response, null, 2)}'`);
       const messages = this._botMessageFormatter.toBotFrameworkMessage(session, response);
       messages.forEach((message) => {
         this._logger.info(`Replying from bot named '${botName}' in team '${teamId}'`);
@@ -50,13 +54,28 @@ export class TellDialog extends BaseDialog {
       })
     }
 
-    const bot =
-      await this._botService.sendMessageToBot(teamId, botName, botMessage, responseHandler);
-      
-    if (!bot) {
-      session.send("bot_not_found", botName);
-      return;
+    let bot: Bot;
+    try {
+      bot = await this._botService.sendMessageToBot(teamId, botName, botMessage, responseHandler);
     }
+    catch(error) {
+      if (error instanceof BotIsDisabledException) {
+        session.send("bot_tell_is_disabled_error", botName);
+        return;
+      }
+      else if(error instanceof BotNotFoundException) {
+        session.send("bot_not_found_error", botName);
+        return;
+      }
+      else if (error instanceof BotNotConnectedException) {
+        session.send("bot_tell_not_connected_error", botName);
+        return;
+      }
+      this._logger.error(error);
+      throw error;
+    }
+
     this._logger.info(`Sent message to bot named '${bot.name}' in team '${teamId}'`);
   }
 }
+export default TellDialog;
