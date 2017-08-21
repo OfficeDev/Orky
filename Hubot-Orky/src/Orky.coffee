@@ -25,70 +25,22 @@ class Orky extends Adapter
 
   run: ->
     @robot.logger.info "Run"
-    @connect()
-
-  connect: () ->
-    if @client?
-      @client.destroy()
-      @client = null
-    
+ 
     @client = SocketIO(@config.OrkyUri)
-    @client.once('connect', () =>
-      @robot.logger.info("Connected to Orky")
+    @client.on('connect', () =>
+      @robot.logger.info("Connected to Orky server at #{@config.OrkyUri}")
       @client.emit('register',
         id: @config.BotId,
         secret: @config.BotSecret)
     )
 
-    @client.on('connect_timeout', (timeout) =>
-      @robot.logger.info("Connection to Orky timed out. timeout=#{timeout}")
-    )
-
-    @client.on('connect_error', (error) =>
-      @robot.logger.error("Connect error=#{JSON.stringify(error, null, 2)}")
-    )
-
-    @client.once('no_registration', () =>
-      @robot.logger.error("Orky could not find our registration.")
+    @client.on('no_registration', () =>
+      @robot.logger.error("Registration details are incorrect.");
       process.exit(1)
     )
 
-    @client.once('disconnect', () =>
-      @robot.logger.info("Orky disconnected us.")
-      @connect()
-    )
-
-    @client.on('error', (error) =>
-      @robot.logger.error("Socket error=#{JSON.stringify(error, null, 2)}")
-    )
-
-    @client.on('ping', () =>
-      @robot.logger.debug("Sent a ping to the server")
-    )
-
-    @client.on('pong', (latency) =>
-      @robot.logger.debug("Received a pong from the server. Latency=#{latency}ms")
-    )
-
-    @client.on('reconnect', (attemptNumber) =>
-      @robot.logger.info("Reconnected to Orky. Attempt=#{attemptNumber}")
-    )
-
-    @client.on('reconnect_attempt', (attemptNumber) =>
-      @robot.logger.info("Attempting to reconnect to Orky. Attempt=#{attemptNumber}")
-    )
-
-    @client.on('reconnect_error', (error) =>
-      @robot.logger.error("Reconnect error=#{JSON.stringify(error, null, 2)}")
-    )
-
-    @client.on('reconnect_failed', () =>
-      @robot.logger.info("Failed to reconnect to Orky")
-    )
-
     @client.on('registration_data', (data) =>
-      @robot.logger.info("We have a new name! '#{data.name}'")
-      @robot.name = data.name
+      @robot.logger.info("Registration successful as #{data.name} (#{data.id})")
       @emit('connected')
     )
 
@@ -107,6 +59,45 @@ class Orky extends Adapter
       message = new TextMessage(user, text, message.id)
       @robot.receive message
     )
+
+    @client.on('connect_timeout', (timeout) =>
+      @robot.logger.info("Connection to Orky server timed out. timeout=#{timeout}")
+    )
+
+    @client.on('connect_error', (error) =>
+      @robot.logger.error("Connection to Orky server recieved an error. error=#{JSON.stringify(error)}")
+    )
+
+    @client.on('disconnect', () =>
+      @robot.logger.info("Connection to Orky server was closed.")
+    )
+
+    @client.on('error', (error) =>
+      @robot.logger.error("Socket.io received an error. error=#{JSON.stringify(error)}")
+    )
+
+    @client.on('ping', () =>
+      @robot.logger.debug("Sent a ping to the server")
+    )
+
+    @client.on('pong', (latency) =>
+      @robot.logger.debug("Received a pong from the server. Latency=#{latency}ms")
+    )
+
+    @client.on('reconnect_attempt', (attemptNumber) =>
+      @robot.logger.info("Attempting to reconnect to Orky server. attemptNumber=#{attemptNumber}")
+    )
+
+    @client.on('reconnect_failed', () =>
+      @robot.logger.info("Failed to reconnect to Orky server.")
+    )
+
+  close: () ->
+    @robot.logger.info "Close"
+
+    if @client?
+      @client.disconnect();
+      @client = null;
 
   send: (context, strings...) ->
     @robot.logger.info "Send"
