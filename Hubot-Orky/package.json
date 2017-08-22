@@ -1,0 +1,25 @@
+{
+  "name": "hubot-orky",
+  "version": "0.1.9",
+  "description": "Hubot adapter for orky",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MattSFT/Orky.git"
+  },
+  "main": "src/Orky.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "parent-require": "^1.0.0",
+    "socket.io-client": "^2.0.3"
+  },
+  "peerDependencies": {
+    "hubot": "^2.0"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.12.6"
+  }
+}

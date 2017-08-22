@@ -1,0 +1,24 @@
+{
+	"rules": {
+		"no-string-throw": true,
+		"no-unused-expression": true,
+		"no-duplicate-variable": true,
+		"no-unused-variable": true,
+		"curly": true,
+		"class-name": true,
+		"semicolon": ["always"],
+		"triple-equals": true,
+		"deprecation": true,
+		"indent": [true, "spaces", 2],
+		"prefer-const": true,
+		"trailing-coma": [true, {"multiline": "always", "arrays": "always", "functions": "always", "typeLiterals": "always"}],
+		"eofline": true,
+		"no-console": [true, "log", "error", "warn"],
+		"no-debugger": true,
+		"no-empty": true,
+		"no-eval": true,
+		"arrow-parens": true,
+		"arrow-return-shorthand": true
+		
+	}
+}

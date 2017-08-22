@@ -1,0 +1,79 @@
+{
+    "manifestVersion": "1.0",
+    "version": "1.0",
+    "id": "64fd7505-1b73-43bf-a26e-08a3a60a1a44",
+    "packageName": "mattsft.orky",
+    "developer": {
+        "name": "Matt Stankiewicz",
+        "websiteUrl": "https://github.com/MattSFT/Orky",
+        "privacyUrl": "https://github.com/MattSFT/Orky/blob/master/privacy.md",
+        "termsOfUseUrl": "https://github.com/MattSFT/Orky/blob/master/terms.md"
+    },
+    "name": {
+        "short": "Orky (Demo)",
+        "full": "Orky - The Orchestrator"
+    },
+    "description": {
+        "short": "You can use Orky to execute scripts!",
+        "full": "You can use Orky to register your own local bot in Microsoft Teams and store + execute scripts from ANYWHERE!"
+    },
+    "icons": {
+        "outline": "outlineicon.png",
+        "color": "coloricon.png"
+    },
+    "accentColor": "#FFFFED",
+    "bots": [
+        {
+            "botId": "64fd7505-1b73-43bf-a26e-08a3a60a1a44",
+            "isNotificationOnly": false,
+            "scopes": [
+                "team",
+                "personal"
+            ],
+			"commandLists":[
+			{
+				"scopes":[
+					"team",
+					"personal"
+				],
+				"commands":[
+				{
+					"title":"add ",
+					"description":"Adds a bot with the given name. The name can only contain alphanumeric characters (a-z, A-Z, and 0-9)."
+				},
+				{
+					"title":"remove ",
+					"description":"Removes a bot with the given name."
+				},
+				{
+					"title":"enable ",
+					"description":"Enables a bot."
+				},
+				{
+					"title":"disable ",
+					"description":"Disables a bot."
+				},
+				{
+					"title":"copy ",
+					"description":"Copies a bot and returns the copy key."
+				},
+				{
+					"title":"paste ",
+					"description":"Pastes a bot referenced by the copy key into this team."
+				},
+				{
+					"title":"rename ",
+					"description":"Renames a bot."
+				},
+				{
+					"title":"status",
+					"description":"Shows the status of your bots."
+				},
+				{
+					"title":"tell ",
+					"description":"Tells a bot to execute a command."
+				}]
+			}]
+        }
+    ]
+}

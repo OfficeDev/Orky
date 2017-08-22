@@ -1,0 +1,32 @@
+{
+  "name": "orky",
+  "version": "0.2.0",
+  "description": "You can use Orky to register your own local bot in Microsoft Teams and store + execute scripts from ANYWHERE!",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MattSFT/Orky.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "8.1.4",
+    "npm": "5.0.3"
+  },
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^8.0.17",
+    "@types/restify": "^5.0.1",
+    "@types/socket.io": "^1.4.29",
+    "@types/uuid": "^3.4.0",
+    "botbuilder": "^3.9.0",
+    "crypto": "0.0.3",
+    "restify": "^5.0.1",
+    "socket.io": "^2.0.3",
+    "typescript": "^2.4.2",
+    "uuid": "^3.1.0"
+  }
+}
