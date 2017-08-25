@@ -1,6 +1,6 @@
 {
   "name": "orky",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "You can use Orky to register your own local bot in Microsoft Teams and store + execute scripts from ANYWHERE!",
   "main": "server.js",
   "repository": {
