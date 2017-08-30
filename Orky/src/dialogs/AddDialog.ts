@@ -1,4 +1,4 @@
-import {Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
+import { Session, ThumbnailCard, CardImage, Message, IDialogWaterfallStep, IDialogResult } from "botbuilder/lib/botbuilder";
 import {IBotService} from "../Services";
 import {ILogger} from "../Logging";
 import {SessionUtils} from "../Utils";
@@ -15,10 +15,10 @@ export class AddDialog extends BaseDialog {
   }
 
   protected buildDialog(): IDialogWaterfallStep {
-    return (session: Session) => this.performAction(session);
+    return (session, args) => this.performAction(session, args);
   }
 
-  private async performAction(session: Session): Promise<void> {
+  private async performAction(session: Session, args: any): Promise<void> {
     const incomingMessage = session.message.text || "";
     const match = this._triggerRegExp.exec(incomingMessage);
     if (!match) {
@@ -43,7 +43,7 @@ export class AddDialog extends BaseDialog {
         session.send("bot_register_already_exists_error", botName);
         return;
       }
-      this._logger.error(error);
+      this._logger.logException(error);
       throw error;
     }
 

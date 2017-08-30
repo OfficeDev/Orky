@@ -6,6 +6,7 @@ export enum StorageType {
 export interface IConfig {
   readonly Name: string;
   readonly Version: string;
+  readonly ApplicationInsightsKey?: string;
   readonly MicrosoftAppId: string;
   readonly MicrosoftAppPassword: string;
   readonly MicrosoftTenantFilter: string[];
