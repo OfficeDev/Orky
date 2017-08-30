@@ -44,7 +44,7 @@ export class CopyDialog extends BaseDialog {
         session.send("bot_not_found_error", botName);
         return;
       }
-      this._logger.error(error);
+      this._logger.logException(error);
       throw error;
     }
 

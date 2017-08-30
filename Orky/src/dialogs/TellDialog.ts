@@ -71,7 +71,7 @@ export class TellDialog extends BaseDialog {
         session.send("bot_tell_not_connected_error", botName);
         return;
       }
-      this._logger.error(error);
+      this._logger.logException(error);
       throw error;
     }
 

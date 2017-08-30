@@ -1,17 +1,24 @@
 import BaseLogger from "./BaseLogger";
+import { LogSeverity } from "./LogSeverity";
 
 /* tslint:disable:no-console */
 export class ConsoleLogger extends BaseLogger {
-  protected logMessage(severity: string, message: string|Error): void {
-    if (message instanceof Error) {
-      console.log(`${new Date().toISOString()} [${severity}] ${message.message}`);
-      if (message.stack) {
-        this.debug(message.stack);
-      }
-    } 
-    else {
-      console.log(`${new Date().toISOString()} [${severity}] ${message}`);
+  logMessage(severity: string|number, message: string): void {
+    const timeString = this.getTimeString();
+    if (typeof severity !== 'string') {
+      severity = LogSeverity.toString(severity);
     }
+    console.log(`${timeString} [${severity}] ${message}`);
+  }
+
+  logException(error: Error): void {
+    const timeString = this.getTimeString();
+    console.log(`${timeString} ${error.message}`);
+    console.log(`${timeString} ${error.stack}`);
+  }
+
+  private getTimeString(): string {
+    return new Date().toISOString();
   }
 }
 /* tslint:enable:no-console */

@@ -5,6 +5,7 @@ import {IConfig, StorageType} from "./Interfaces";
 export class Config implements IConfig {
   readonly Name: string;
   readonly Version: string;
+  readonly ApplicationInsightsKey?: string;  
   readonly MicrosoftAppId: string;
   readonly MicrosoftAppPassword: string;
   readonly MicrosoftTenantFilter: string[];
@@ -28,6 +29,8 @@ export class Config implements IConfig {
     catch(error) {
       throw new InvalidOperationException(`Could not read package.json file. error=${error}`);
     }
+
+    this.ApplicationInsightsKey = process.env.APPINSIGHTS_INSTRUMENTATIONKEY;
 
     if (!process.env.MICROSOFT_APP_ID) {
       throw new InvalidOperationException("Environment variable 'MICROSOFT_APP_ID' not set.");

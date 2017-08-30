@@ -24,7 +24,7 @@ export class BotRepository implements IBotRepository {
 
     this.loadData()
       .catch((error) => {
-        this._logger.error(error);
+        this._logger.logException(error);
       })
   }
 

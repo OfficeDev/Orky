@@ -51,6 +51,9 @@ export class Dialogs {
     new CopyDialog(botService, Dialogs.CopyMatch, logger).register("/copy", bot);
     new PasteDialog(botService, Dialogs.PasteMatch, logger).register("/paste", bot);
     new TellDialog(botService, botMessageFormatter, Dialogs.TellMatch, logger).register("/tell", bot);
+
+    logger.info('All dialogs registered');
+    
     return bot;
   }
 }

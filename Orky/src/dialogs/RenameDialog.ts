@@ -53,7 +53,7 @@ export class RenameDialog extends BaseDialog {
         session.send("bot_rename_already_exists_error", toName, fromName);
         return;
       }
-      this._logger.error(error);
+      this._logger.logException(error);
       throw error;
     }
 
