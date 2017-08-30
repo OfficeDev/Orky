@@ -26,7 +26,7 @@ export abstract class BaseDialog {
       throw new ArgumentNullException("bot");
     }
 
-    this._logger.info(`Registered dialog '${name}'`);
+    this._logger.debug(`Registered dialog '${name}'`);
     let dialogActions = this.buildDialog();
     if (!Array.isArray(dialogActions)) {
       dialogActions = [dialogActions];

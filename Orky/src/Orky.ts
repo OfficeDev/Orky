@@ -1,7 +1,7 @@
 import * as restify from "restify";
 import * as SocketIO from "socket.io";
 import {UniversalBot, ChatConnector, IMiddlewareMap, IEvent, Session} from "botbuilder";
-import {ConsoleLogger, ILogger} from "./Logging";
+import { ConsoleLogger, ILogger, ApplicationInsightsLogger, CompoundLogger, NoLogger } from "./Logging";
 import {Config, IConfig, StorageType} from "./Config";
 import {BotRepository, IDataStorage, FileStorage, MemoryStorage} from "./Repositories";
 import {BotConnectionManager, BotService, BotMessageFormatter} from "./Services"
@@ -49,7 +49,6 @@ class TenantFilterMiddleware implements IMiddlewareMap {
   }
 }
 
-
 // Strip bot mentions from the message text
 class StripBotAtMentions implements IMiddlewareMap {
   public readonly botbuilder = (session: Session, next: Function): void => {
@@ -82,9 +81,26 @@ export class Orky {
     }
 
     this._config = config;
-    this._logger = new ConsoleLogger(config.LogLevel);
 
-    this._logger.info(`Created instance of Orky with config: ${JSON.stringify(this._config, null, 2)}`)
+    const loggers = [];
+    loggers.push(new ConsoleLogger(config.LogLevel));
+
+    if (config.ApplicationInsightsKey) {
+      loggers.push(new ApplicationInsightsLogger(config.LogLevel, config.ApplicationInsightsKey));
+    }
+
+    if (loggers.length === 1) {
+      this._logger = loggers[0];
+    }
+    else if (loggers.length > 1) {
+      this._logger = new CompoundLogger(config.LogLevel, loggers);
+    }
+    else {
+      this._logger = new NoLogger();
+    }
+
+    this._logger.info('Created new instance of Orky.');
+    this._logger.debug(`Config: ${JSON.stringify(this._config)}`);
   }
 
   run(): void {
@@ -129,7 +145,7 @@ export class Orky {
       botService.authorizeConnection(socket)
         .then(() => next())
         .catch((error) => {
-          this._logger.error(error);
+          this._logger.logException(error);
           next(error)
         });
     });
@@ -137,7 +153,7 @@ export class Orky {
     io.on('connection', (socket) => {
       botService.establishConnection(socket)
         .catch((error) => {
-          this._logger.error(error);
+          this._logger.logException(error);
         });
     });
 

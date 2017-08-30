@@ -1,6 +1,6 @@
 {
   "name": "hubot-orky",
-  "version": "0.1.9",
+  "version": "0.1.11",
   "description": "Hubot adapter for orky",
   "repository": {
     "type": "git",

@@ -51,7 +51,7 @@ export class PasteDialog extends BaseDialog {
       else if (error instanceof BotAlreadyExistsException) {
         session.send("bot_paste_already_exists_error", copySecret);        
       }
-      this._logger.error(error);
+      this._logger.logException(error);
       throw error;
     }
 
