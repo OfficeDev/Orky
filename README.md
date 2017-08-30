@@ -14,6 +14,9 @@ Here are the currently supported services:
 * [Hubot](https://hubot.github.com/) with the [Hubot-Orky](https://github.com/MattSFT/Orky/tree/master/Hubot-Orky) adapter. Instructions can be found [here](https://github.com/MattSFT/Orky/tree/master/Hubot-Orky).
 
 
+# Attributions
+The logo for Orky was created by artist [Proycontec](http://www.iconarchive.com/artist/proycontec.html). The artist does not endorse this software. The license for the logo can be found [here](http://creativecommons.org/licenses/by-sa/4.0/). The entire icon set by the artist can be found [here](http://www.iconarchive.com/show/robots-icons-by-proycontec.html)
+
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
@@ -27,7 +30,3 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
-# Attributions
-
-The logo for Orky was created by artist [Proycontec](http://www.iconarchive.com/artist/proycontec.html). The artist does not endorse this software. The license for the logo can be found [here](http://creativecommons.org/licenses/by-sa/4.0/). The entire icon set by the artist can be found [here](http://www.iconarchive.com/show/robots-icons-by-proycontec.html)
