@@ -45,8 +45,13 @@ export class TellDialog extends BaseDialog {
     const conversationId = conversation ? conversation.id : sender.id;
     const botMessage = new BotMessage(message, teamId, "threadId", conversationId, sender);
 
-    const responseHandler = (response: BotResponse) => {
-      this._logger.debug(`Replying with message=${JSON.stringify(response, null, 2)}'`);
+    const responseHandler = (response: BotResponse, error?: Error) => {
+      if (error) {
+        this._logger.logException(error);
+        return;
+      }
+
+      this._logger.debug(`Responding with message=${JSON.stringify(response)}'`);
       const messages = this._botMessageFormatter.toBotFrameworkMessage(session, response);
       messages.forEach((message) => {
         this._logger.info(`Replying from bot named '${botName}' in team '${teamId}'`);
