@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
 SocketIO = require 'socket.io-client'
 try
   {Robot,Adapter,TextMessage,User} = require 'hubot'

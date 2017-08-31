@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {Session, ThumbnailCard, CardImage, Message, AttachmentLayout, IDialogWaterfallStep} from "botbuilder/lib/botbuilder";
 import {BotStatus} from "../Models";
 import {InvalidOperationException} from "../Errors";

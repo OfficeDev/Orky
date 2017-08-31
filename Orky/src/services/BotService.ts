@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import * as crypto from 'crypto';
 import * as SocketIO from "socket.io";
 import {ArgumentNullException, ArgumentException} from "../Errors";

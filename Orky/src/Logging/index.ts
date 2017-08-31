@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import ConsoleLogger from "./ConsoleLogger";
 import ApplicationInsightsLogger from "./ApplicationInsightsLogger";
 import { ILogger } from "./Interfaces";

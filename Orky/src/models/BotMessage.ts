@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {v4 as uuid} from "uuid";
 import {ArgumentNullException} from "../Errors";
 import User from "./User";

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {Session, IMessage} from "botbuilder";
 import {Bot, BotStatus, BotMessage, BotResponse} from "../Models";
 
