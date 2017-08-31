@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license.
 {
   "unmatched_response" : "I support the following commands:<br/><b>add [name]</b> - Adds a bot with the given name to this team. The name can only contain alphanumeric characters (a-z, A-Z and 0-9).<br/><b>remove [name]</b> - Removes a bot with the given name from this team.<br/><b>enable [name]</b> - Enables a bot.<br/><b>disable [name]</b> - Disables a bot.<br/><b>rename [name] to [new name]</b> - Renames a bot.<br/><b>copy [name]</b> - Provides a copy key to paste a bot into another team.<br/><b>paste [copy key]</b> - Pastes the copied bot into this team.<br/><b>status</b> - Shows the status of your bots.<br/><b>tell [name] [command]</b> - Tells a bot to execute a command.",
   "cannot_extract_bot_name": "I couldn't determine the name of your bot from your message.",
