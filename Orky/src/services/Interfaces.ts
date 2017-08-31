@@ -1,7 +1,7 @@
 import {Session, IMessage} from "botbuilder";
 import {Bot, BotStatus, BotMessage, BotResponse} from "../Models";
 
-export interface IBotResponseHandler { (response: BotResponse): void }
+export interface IBotResponseHandler { (response: BotResponse|null, error?: Error): void }
 
 export interface IBotConnectionManager {
   authorizeConnection(socket: SocketIO.Socket): Promise<void>;

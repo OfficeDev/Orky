@@ -22,6 +22,13 @@ export class BotNotFoundException extends Error {
   }
 }
 
+export class BotResponseMalformedException extends Error {
+  constructor(botIdOrName: string) {
+    let message = `Bot with id '${botIdOrName}' responded with malformed data.`;
+    super(message);
+  }
+}
+
 export class CopyKeyNotFoundException extends Error {
   constructor(copyKey: string) {
     const message = `Bot with copy key '${copyKey}' was not found.`;
