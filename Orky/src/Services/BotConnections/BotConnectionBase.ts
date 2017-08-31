@@ -3,6 +3,7 @@ import {ArgumentNullException} from "../../Errors";
 import {BotMessage, BotResponse} from "../../Models";
 import {ILogger} from "../../Logging";
 import {IBotResponseHandler, IBotConnection} from "../Interfaces";
+import { BotResponseMalformedException } from "../../ServiceErrors";
 
 export abstract class BotConnectionBase extends EventEmitter implements IBotConnection {
   readonly botId: string;
@@ -50,14 +51,24 @@ export abstract class BotConnectionBase extends EventEmitter implements IBotConn
   sendMessage(message: BotMessage, responseHandler: IBotResponseHandler): void {
     const event = `message-${message.id}`;
     this._socket.on(event, (data) => {
+      this._logger.debug(`Connection (${this._socket.id}) with ${this.botName} (${this.botId}) responded with data=${JSON.stringify(data)}`);
+      if (!data || !data.type || typeof data.type !== 'string' || !data.messages) {
+        responseHandler(null, new BotResponseMalformedException(this.botId));
+        return;
+      }
+
+      if (!Array.isArray(data.messages)) {
+        data.messages = [data.messages];
+      }
+
       const response = new BotResponse(data.type, data.messages);
       responseHandler(response);
     });
 
     // Remove listeners to clean up memory.
-    setTimeout((event) => {
-      this._socket.removeAllListeners(event);
-    }, this._responseTimeout, event);
+    setTimeout((socket, event) => {
+      socket.removeAllListeners(event);
+    }, this._responseTimeout, this._socket, event);
 
     this._socket.emit('post_message', message);
   }
