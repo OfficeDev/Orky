@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import BaseLogger from "./BaseLogger";
 import { ArgumentNullException, ArgumentOutOfRangeException } from "../Errors";
 import { LogSeverity } from "./LogSeverity";

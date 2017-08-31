@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {ChatConnector, UniversalBot, Session} from "botbuilder";
 import {ArgumentNullException, InvalidOperationException} from '../Errors'
 import {ILogger} from '../Logging';

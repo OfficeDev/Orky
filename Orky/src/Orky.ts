@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import * as restify from "restify";
 import * as SocketIO from "socket.io";
 import {UniversalBot, ChatConnector, IMiddlewareMap, IEvent, Session} from "botbuilder";

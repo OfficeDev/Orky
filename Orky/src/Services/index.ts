@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import BotService from "./BotService";
 import BotMessageFormatter from "./BotMessageFormatter";
 import BotConnectionManager from "./BotConnectionManager";

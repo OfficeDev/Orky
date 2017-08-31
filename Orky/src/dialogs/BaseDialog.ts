@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {UniversalBot, Session, IDialogWaterfallStep} from "botbuilder";
 import {ILogger} from "../Logging";
 import {ArgumentNullException, InvalidOperationException} from "../Errors";

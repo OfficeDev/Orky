@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {ArgumentOutOfRangeException} from "../Errors";
 import {ILogger} from "./Interfaces";
 import { LogSeverity } from "./LogSeverity";

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {EventEmitter} from 'events';
 import {ArgumentNullException, ArgumentException} from "../Errors";
 import {Bot, BotMessage, BotResponse} from "../Models";
