@@ -40,7 +40,10 @@ export class Bot {
   }
 
   removeFromTeam(teamId: string) {
-    this.teamId = this.teamId.filter((t) => t !== teamId);
+    const teamIdx = this.teamId.indexOf(teamId);
+    if (teamIdx !== -1) {
+      this.teamId.splice(teamIdx, 1);
+    }
   }
 }
 export default Bot;

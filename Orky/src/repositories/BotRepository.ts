@@ -7,7 +7,6 @@ import {ILogger} from "../logging/Interfaces";
 import {BotNotFoundException} from "../ServiceErrors";
 
 export class BotRepository implements IBotRepository {
-  private _botsByTeamAndName: any;
   private _botsById: {[key: string]: Bot};
   private _storage: IDataStorage;
   private _logger: ILogger
@@ -21,7 +20,6 @@ export class BotRepository implements IBotRepository {
     }
     this._storage = storage;
     this._logger = logger;
-    this._botsByTeamAndName = {};
     this._botsById = {};
 
     this.loadData()
@@ -35,22 +33,7 @@ export class BotRepository implements IBotRepository {
       throw new ArgumentNullException("bot");
     }
 
-    const originalBot = this._botsById[bot.id];
-    if (originalBot && originalBot.name.toLowerCase() !== bot.name.toLowerCase()) {
-      originalBot.teamId.forEach((teamId) => {
-        delete this._botsByTeamAndName[teamId][originalBot.name.toLowerCase()];
-      });
-    }
-
     this._botsById[bot.id] = bot;
-    bot.teamId.forEach((teamId) => {
-      let teamMap = this._botsByTeamAndName[teamId]
-      if (!teamMap) {
-        teamMap = {};
-        this._botsByTeamAndName[teamId] = teamMap;
-      }
-      teamMap[bot.name.toLowerCase()] = bot;
-    });
 
     await this.saveData();
     return this.cloneBot(bot);
@@ -63,9 +46,6 @@ export class BotRepository implements IBotRepository {
 
     const bot = await this.findById(botId);
     delete this._botsById[bot.id];
-    bot.teamId.forEach((teamId) => {
-      delete this._botsByTeamAndName[teamId][bot.name.toLowerCase()];
-    });
     
     await this.saveData();
     return bot;
@@ -92,24 +72,46 @@ export class BotRepository implements IBotRepository {
       throw new ArgumentNullException("botName");
     }
 
-    if (await this.exists(teamId, botName)) {
-      return this.cloneBot(this._botsByTeamAndName[teamId][botName.toLowerCase()]);
+    const botIds = Object.keys(this._botsById);
+    while(botIds.length > 0) {
+      const botId = botIds.shift() as string;
+      const bot = this._botsById[botId];
+      if (bot.teamId.includes(teamId) && bot.name.toLowerCase() === botName.toLowerCase()) {
+        return this.cloneBot(bot);
+      }
     }
 
     throw new BotNotFoundException(botName, teamId);
   }
 
   async exists(teamId: string, botName: string): Promise<boolean> {
-    return this._botsByTeamAndName[teamId] && this._botsByTeamAndName[teamId][botName.toLowerCase()];
+    const botIds = Object.keys(this._botsById);
+    while(botIds.length > 0) {
+      const botId = botIds.shift() as string;
+      const bot = this._botsById[botId];
+      if (bot.teamId.includes(teamId) && bot.name.toLowerCase() === botName.toLowerCase()) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   async getAllByTeam(teamId: string): Promise<Bot[]> {
     if (!teamId) {
       throw new ArgumentNullException("teamId");
     }
-
-    const botByName = this._botsByTeamAndName[teamId] || {};
-    return Object.values(botByName).map((bot) => this.cloneBot(bot));
+    
+    const bots = []
+    const botIds = Object.keys(this._botsById);
+    while(botIds.length > 0) {
+      const botId = botIds.shift() as string;
+      const bot = this._botsById[botId];
+      if (bot.teamId.includes(teamId)) {
+        bots.push(this.cloneBot(bot));
+      }
+    }
+    return bots;
   }
 
   private cloneBot(bot: Bot): Bot {
@@ -140,14 +142,6 @@ export class BotRepository implements IBotRepository {
       bot.iconUrl = value.iconUrl || bot.iconUrl;
       (bot as any).id = value.id; // force the id
       this._botsById[value.id] = bot;
-      bot.teamId.forEach((teamId) => {
-        let teamMap = this._botsByTeamAndName[teamId]
-        if (!teamMap) {
-          teamMap = {};
-          this._botsByTeamAndName[teamId] = teamMap;
-        }
-        teamMap[bot.name.toLowerCase()] = bot;
-      });
     }
 
     this._logger.info(`Loaded ${Object.values(this._botsById).length} bots.`);
