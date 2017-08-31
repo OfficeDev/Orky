@@ -66,10 +66,11 @@ export class BotService implements IBotService {
   }
 
   async deregisterBotWithName(teamId: string, botName: string): Promise<Bot> {
-    const bot = await this._botRepository.findByTeamAndName(teamId, botName);
+    let bot = await this._botRepository.findByTeamAndName(teamId, botName);
     bot.removeFromTeam(teamId);
+    bot = await this._botRepository.save(bot);
     if (bot.teamId.length === 0) {
-      await this._botRepository.deleteById(bot.id);
+      bot = await this._botRepository.deleteById(bot.id);
       await this._botConnectionManager.disconnect(bot.id);
     }
     return bot;
