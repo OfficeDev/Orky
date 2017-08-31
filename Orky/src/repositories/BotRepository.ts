@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {ArgumentNullException, InvalidOperationException} from "../Errors";
 import {Bot} from "../Models";
 import {IDataStorage, IBotRepository} from "./Interfaces";

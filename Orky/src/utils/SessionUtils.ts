@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {Session} from "botbuilder";
 import {User} from "../Models";
 import {ArgumentNullException} from "../Errors";

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {ArgumentNullException, ArgumentOutOfRangeException} from "../Errors";
 import Bot from "./Bot";
 

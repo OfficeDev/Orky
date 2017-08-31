@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 import {Session, Message, IMessage, IChatConnectorAddress, IIdentity} from "botbuilder";
 import {ArgumentNullException} from "../Errors";
 import {BotResponse} from "../Models";
