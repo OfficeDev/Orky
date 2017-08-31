@@ -10,68 +10,6 @@ import {BotConnectionManager, BotService, BotMessageFormatter} from "./Services"
 import {Dialogs} from "./Dialogs";
 import {ArgumentNullException} from "./Errors";
 
-// Strip bot mentions from the message text
-class TenantFilterMiddleware implements IMiddlewareMap {
-  private _logger: ILogger;
-  private _allowedTenants: string[];
-
-  constructor(logger: ILogger, allowedTenants: string[]) {
-    if (!logger) {
-      throw new ArgumentNullException("logger");
-    }
-    this._logger = logger;
-
-    this._allowedTenants = allowedTenants || [];
-    this._allowedTenants = this._allowedTenants.map((tenantId) => tenantId.trim().toLowerCase());
-
-    const tenantString = this._allowedTenants.length === 0 ? "All" : this._allowedTenants.join(", ");
-    this._logger.info(`Restricting messages to tenants: ${tenantString}`);
-  }
-
-  public readonly receive = (event: IEvent, next: Function): void => {
-    // No tenant filter means pass through all events.
-    if (this._allowedTenants.length === 0) {
-      return next();
-    }
-
-    // Filter the event out only if it came from the specified tenant.
-    if (event && event.sourceEvent) {
-      if (event.sourceEvent.tenant && event.sourceEvent.tenant.id as string) {
-        const tenantId = event.sourceEvent.tenant.id as string;
-        if (this._allowedTenants.includes(tenantId.toLowerCase())) {
-          return next();
-        }
-
-        this._logger.warn(`Received message from unauthorized tenant '${tenantId}'.`);
-      }
-      else {
-        this._logger.warn(`Received message without tenant data.`);
-      }
-    }
-  }
-}
-
-// Strip bot mentions from the message text
-class StripBotAtMentions implements IMiddlewareMap {
-  public readonly botbuilder = (session: Session, next: Function): void => {
-    const message = session.message;
-    if (message) {
-      const botMri = message.address.bot.id.toLowerCase();
-      const botAtMentions = message.entities && message.entities.filter(
-        (entity) => (entity.type === "mention") && (entity.mentioned.id.toLowerCase() === botMri));
-      if (botAtMentions && botAtMentions.length) {
-        // Save original text as property of the message
-        (message as any).textWithBotMentions = message.text;
-        // Remove the text corresponding to each mention
-        message.text = botAtMentions.reduce((previousText, entity) => {
-          return previousText.replace(entity.text, "").trim();
-        }, message.text);
-      }
-    }
-    next();
-  }
-}
-
 export class Orky {
   private _config: IConfig;
   private _logger: ILogger;
@@ -123,20 +61,19 @@ export class Orky {
     const botConnectionManager = new BotConnectionManager(botRepository, this._config.BotResponseTimeout, this._logger);
     const botService = new BotService(botRepository, botConnectionManager, this._logger, this._config.BotKeepDuration);
     const botMessageFormatter = new BotMessageFormatter();
-    
-    const universalBot = Dialogs.register(chatConnector, botService, botMessageFormatter, this._logger);
-    universalBot.use(new TenantFilterMiddleware(this._logger, this._config.MicrosoftTenantFilter));
-    universalBot.use(new StripBotAtMentions());
-    universalBot.set('localizerSettings', {
-      defaultLocale: this._config.DefaultLocale,
-      botLocalePath: this._config.LocalePath
-    })
+    const universalBot = Dialogs.register(chatConnector, botService, botMessageFormatter, this._logger, this._config);
 
     this._server = restify.createServer({
       name: this._config.Name,
       version: this._config.Version,
       socketio: true
     });
+
+    this._server.get("/", (req, res) => {
+      res.send(200);
+      res.end();
+    });
+
     this._server.post(this._config.MessagesEndpoint, chatConnector.listen());
 
     const io = SocketIO(this._server, {
