@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
-import * as restify from "restify";
+import * as Path from "path";
+import {Server} from "http";
+import * as Express from "express";
 import * as SocketIO from "socket.io";
 import {UniversalBot, ChatConnector, IMiddlewareMap, IEvent, Session} from "botbuilder";
 import { ConsoleLogger, ILogger, ApplicationInsightsLogger, CompoundLogger, NoLogger } from "./Logging";
@@ -13,37 +15,24 @@ import {ArgumentNullException} from "./Errors";
 export class Orky {
   private _config: IConfig;
   private _logger: ILogger;
-  private _server: restify.Server;
+  private _server: Server;
 
-  constructor(config: IConfig) {
+  constructor(config: IConfig, logger: ILogger) {
     if (!config) {
       throw new ArgumentNullException("config");
     }
+    if (!logger) {
+      throw new ArgumentNullException("logger");
+    }
 
     this._config = config;
-
-    const loggers = [];
-    loggers.push(new ConsoleLogger(config.LogLevel));
-
-    if (config.ApplicationInsightsKey) {
-      loggers.push(new ApplicationInsightsLogger(config.LogLevel, config.ApplicationInsightsKey));
-    }
-
-    if (loggers.length === 1) {
-      this._logger = loggers[0];
-    }
-    else if (loggers.length > 1) {
-      this._logger = new CompoundLogger(config.LogLevel, loggers);
-    }
-    else {
-      this._logger = new NoLogger();
-    }
+    this._logger = logger;
 
     this._logger.info('Created new instance of Orky.');
     this._logger.debug(`Config: ${JSON.stringify(this._config)}`);
   }
 
-  run(): void {
+  run(): void {   
     const chatConnector = new ChatConnector({
       appId: this._config.MicrosoftAppId,
       appPassword: this._config.MicrosoftAppPassword
@@ -63,18 +52,14 @@ export class Orky {
     const botMessageFormatter = new BotMessageFormatter();
     const universalBot = Dialogs.register(chatConnector, botService, botMessageFormatter, this._logger, this._config);
 
-    this._server = restify.createServer({
-      name: this._config.Name,
-      version: this._config.Version,
-      socketio: true
+    const app = Express();
+    this._server = app.listen(this._config.ServerPort, () => {
+      const address = this._server.address();
+      this._logger.info(`Orky is running on ${JSON.stringify(address)}`); 
     });
 
-    this._server.get("/", (req, res) => {
-      res.send(200);
-      res.end();
-    });
-
-    this._server.post(this._config.MessagesEndpoint, chatConnector.listen());
+    app.use(Express.static(Path.join(__dirname, "../public")));
+    app.post(this._config.MessagesEndpoint, chatConnector.listen());
 
     const io = SocketIO(this._server, {
       path: this._config.BotConnectionEndpoint
@@ -95,22 +80,60 @@ export class Orky {
           this._logger.logException(error);
         });
     });
-
-    this._server.listen(this._config.ServerPort, () => {
-      this._logger.info(`${this._server.name} listening to ${this._server.url}`); 
-    });
-
-    this._logger.info("Orky is running");
   }
 
   stop(): void {
-    this._logger.info("Orky is shutting down");
-    this._server.close();
+    if (this._server && this._server.listening) {
+      this._server.close(() => {
+        this._logger.info("Orky shut down");
+      });
+    }
   }
 }
 
 export function run(): void {
   const config = new Config();
-  const orky = new Orky(config);
+  
+  const loggers = [];
+  loggers.push(new ConsoleLogger(config.LogLevel));
+
+  if (config.ApplicationInsightsKey) {
+    loggers.push(new ApplicationInsightsLogger(config.LogLevel, config.ApplicationInsightsKey));
+  }
+
+  let logger: ILogger;
+  if (loggers.length === 1) {
+    logger = loggers[0];
+  }
+  else if (loggers.length > 1) {
+    logger = new CompoundLogger(config.LogLevel, loggers);
+  }
+  else {
+    logger = new NoLogger();
+  }
+  const orky = new Orky(config, logger);  
+
+  process.on("uncaughtException", (error) => {
+    logger.logException(error);
+  });
+
+  process.on("unhandledRejection", (error) => {
+    if (!(error instanceof Error)) {
+      error = new Error(error);
+    }
+    logger.logException(error);    
+  });
+
+  process.on("warning", (warning) => {
+    logger.warn(`${warning.name}: ${warning.message} ${warning.stack}`);
+  });
+
+  process.on('SIGINT', () => {
+    orky.stop();
+  });
+
+  process.on("exit", (code) => {
+    orky.stop();
+  });
   orky.run();
 }
