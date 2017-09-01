@@ -19,14 +19,14 @@
   "license": "MIT",
   "dependencies": {
     "@types/applicationinsights": "^0.15.34",
+    "@types/express": "^4.0.37",
     "@types/node": "^8.0.17",
-    "@types/restify": "^5.0.1",
     "@types/socket.io": "^1.4.29",
     "@types/uuid": "^3.4.0",
     "applicationinsights": "^0.21.0",
     "botbuilder": "^3.9.0",
     "crypto": "0.0.3",
-    "restify": "^5.0.1",
+    "express": "^4.15.4",
     "socket.io": "^2.0.3",
     "typescript": "^2.4.2",
     "uuid": "^3.1.0"
