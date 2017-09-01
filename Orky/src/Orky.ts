@@ -121,7 +121,7 @@ export function run(): void {
     if (!(error instanceof Error)) {
       error = new Error(error);
     }
-    logger.logException(error);    
+    logger.logException(error);
   });
 
   process.on("warning", (warning) => {
