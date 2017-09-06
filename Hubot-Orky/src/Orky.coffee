@@ -37,7 +37,7 @@ class Orky extends Adapter
     )
 
     @client.on('no_registration', () =>
-      @robot.logger.error("Registration details are incorrect.");
+      @robot.logger.error("Registration details are incorrect.")
       process.exit(1)
     )
 
@@ -70,8 +70,11 @@ class Orky extends Adapter
       @robot.logger.error("Connection to Orky server recieved an error. error=#{JSON.stringify(error)}")
     )
 
-    @client.on('disconnect', () =>
+    @client.on('disconnect', (reason) =>
       @robot.logger.info("Connection to Orky server was closed.")
+      @robot.logger.debug("Disconnect reason='#{reason}'")
+      if reason == 'io server disconnect'
+        process.exit(1)
     )
 
     @client.on('error', (error) =>
@@ -98,8 +101,8 @@ class Orky extends Adapter
     @robot.logger.info "Close"
 
     if @client?
-      @client.disconnect();
-      @client = null;
+      @client.disconnect()
+      @client = null
 
   send: (context, strings...) ->
     @robot.logger.info "Send"
