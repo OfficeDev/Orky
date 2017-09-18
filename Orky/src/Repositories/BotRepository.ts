@@ -3,7 +3,7 @@
 import {ArgumentNullException, InvalidOperationException} from "../Errors";
 import {Bot} from "../Models";
 import {IDataStorage, IBotRepository} from "./Interfaces";
-import {ILogger} from "../logging/Interfaces";
+import {ILogger} from "../Logging";
 import {BotNotFoundException} from "../ServiceErrors";
 
 export class BotRepository implements IBotRepository {
