@@ -1,5 +1,7 @@
 # Orky
 
+[![Build Status](https://travis-ci.org/OfficeDev/Orky.svg?branch=master)](https://travis-ci.org/OfficeDev/Orky)
+
 ## What is Orky?
 
 [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) is a bot you can deploy on [BotFramework](https://dev.botframework.com/). It provides a protocol for communicating with OrkyBot instances on [BotFramework](https://dev.botframework.com/).

@@ -1,5 +1,7 @@
 # Hubot-Orky
 
+[![npm version](https://badge.fury.io/js/hubot-orky.svg)](https://badge.fury.io/js/hubot-orky) [![Build Status](https://travis-ci.org/OfficeDev/Orky.svg?branch=master)](https://travis-ci.org/OfficeDev/Orky)
+
 ## What is Hubot-Orky?
 
 Hubot-Orky is a [Hubot](https://hubot.github.com/) adapter that allows instances of [Hubot](https://hubot.github.com/) to communicate with an [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance.
