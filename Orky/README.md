@@ -1,6 +1,6 @@
 # Orky
 
-[![Build Status](https://travis-ci.org/OfficeDev/Orky.svg?branch=master)](https://travis-ci.org/OfficeDev/Orky)
+[![Build Status](https://travis-ci.org/OfficeDev/Orky.svg?branch=master)](https://travis-ci.org/OfficeDev/Orky) [![Coverage Status](https://coveralls.io/repos/github/OfficeDev/Orky/badge.svg?branch=master)](https://coveralls.io/github/OfficeDev/Orky?branch=master)
 
 ## What is Orky?
 
