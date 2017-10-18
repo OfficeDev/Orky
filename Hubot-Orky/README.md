@@ -16,7 +16,7 @@ If you are interested in deploying an instance of [Orky](https://github.com/Offi
 
 This guide can help you create your own [Hubot](https://hubot.github.com/) instance from scratch. You can then take this [Hubot](https://hubot.github.com/) instance and register it with an [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance and talk to it in any [BotFramework](https://dev.botframework.com/) supported channel (with some enhancements if you use the [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software) channel).
 
-### Requirements:
+### Requirements:https://github.com/OfficeDev/Orky/blob/master/Hubot-Orky/README.md
 
 * [nodejs](https://nodejs.org)
 
@@ -29,7 +29,7 @@ yo hubot
 npm install coffee-script --save
 ```
 
-2. Fill in the prompts appropriatly. For Adapter type 'orky'
+2. Fill in the prompts appropriately. For Adapter type 'orky'
 
 3. Once this is done you should have a working [Hubot](https://hubot.github.com/) instance capable of talking to an [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance. Now you have to add it to your team or chat and configure it with secrets. Go to a team in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software) or a chat thread with [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) in any other [BotFramework](https://dev.botframework.com/) channel where you want to add the [Hubot](https://hubot.github.com/) instance.
 ```
