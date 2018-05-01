@@ -25,7 +25,7 @@ You can quickly start a chat with the [Orky](https://github.com/OfficeDev/Orky/t
 
 ### Try the [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) demo in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
 
-You can try [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) by [sideloading](https://msdn.microsoft.com/en-us/microsoft-teams/sideload) this [package](https://github.com/OfficeDev/Orky/raw/master/OrkyDemoManifest/OrkyDemoManifest.zip) into any one of your teams. Then you can talk to [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) in any channel of that team by typing @OrkyDemo.
+You can try [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) by [sideloading](https://msdn.microsoft.com/en-us/microsoft-teams/sideload) this [package](https://github.com/OfficeDev/Orky/raw/master/OrkyDemoManifest/OrkyDemo.zip) into any one of your teams. Then you can talk to [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) in any channel of that team by typing @OrkyDemo.
 
 ## How to deploy your own [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance
 
