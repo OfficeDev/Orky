@@ -1,0 +1,15 @@
+language: node_js
+sudo: false
+node_js:
+  - 8
+env:
+  - TEST_DIR=Orky
+  - TEST_DIR=Hubot-Orky
+before_install:
+  - cd $TEST_DIR
+install:
+  - npm install
+  - npm install --only=dev
+script:
+  - npm test
+after_success: npm run coveralls

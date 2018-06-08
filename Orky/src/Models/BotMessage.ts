@@ -10,7 +10,6 @@ export class BotMessage {
   readonly teamId: string;
   readonly threadId: string;
   readonly channelId: string;
-  readonly timestamp: Date;
   readonly sender: User;
 
   constructor(

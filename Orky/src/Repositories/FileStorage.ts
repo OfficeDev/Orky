@@ -3,7 +3,7 @@
 import * as fs from "fs";
 import {ArgumentNullException, InvalidOperationException} from "../Errors";
 import {IDataStorage} from "./Interfaces";
-import {ILogger} from "../logging/Interfaces";
+import {ILogger} from "../Logging";
 
 export class FileStorage implements IDataStorage {
   private _logger: ILogger

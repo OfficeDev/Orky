@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import {ArgumentNullException} from "../Errors";
 import {IDataStorage} from "./Interfaces";
-import {ILogger} from "../logging/Interfaces";
+import {ILogger} from "../Logging";
 
 export class MemoryStorage implements IDataStorage {
   private _logger: ILogger;

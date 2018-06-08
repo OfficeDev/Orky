@@ -2,12 +2,12 @@
     "manifestVersion": "1.0",
     "version": "1.0",
     "id": "64fd7505-1b73-43bf-a26e-08a3a60a1a44",
-    "packageName": "mattsft.orky",
+    "packageName": "microsoft.officedev.orky",
     "developer": {
-        "name": "Matt Stankiewicz",
-        "websiteUrl": "https://github.com/MattSFT/Orky",
-        "privacyUrl": "https://github.com/MattSFT/Orky/blob/master/privacy.md",
-        "termsOfUseUrl": "https://github.com/MattSFT/Orky/blob/master/terms.md"
+        "name": "Microsoft",
+        "websiteUrl": "https://github.com/OfficeDev/Orky",
+        "privacyUrl": "https://github.com/OfficeDev/Orky/blob/master/privacy.md",
+        "termsOfUseUrl": "https://github.com/OfficeDev/Orky/blob/master/terms.md"
     },
     "name": {
         "short": "Orky (Demo)",

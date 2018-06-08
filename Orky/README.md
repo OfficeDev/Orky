@@ -1,33 +1,35 @@
 # Orky
 
+[![Build Status](https://travis-ci.org/OfficeDev/Orky.svg?branch=master)](https://travis-ci.org/OfficeDev/Orky) [![Coverage Status](https://coveralls.io/repos/github/OfficeDev/Orky/badge.svg?branch=master)](https://coveralls.io/github/OfficeDev/Orky?branch=master)
+
 ## What is Orky?
 
-[Orky](https://github.com/MattSFT/Orky/tree/master/Orky) is a bot you can deploy on [BotFramework](https://dev.botframework.com/). It provides a protocol for communicating with OrkyBot instances on [BotFramework](https://dev.botframework.com/).
+[Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) is a bot you can deploy on [BotFramework](https://dev.botframework.com/). It provides a protocol for communicating with OrkyBot instances on [BotFramework](https://dev.botframework.com/).
 
 ## What is an OrkyBot?
 
-An OrkyBot is any service that speaks the [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) protocol. This means that integrating any service with [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) will allow users to communicate with it through chat.
+An OrkyBot is any service that speaks the [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) protocol. This means that integrating any service with [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) will allow users to communicate with it through chat.
 
 Here are the currently supported services:
-* [Hubot](https://hubot.github.com/) with the [Hubot-Orky](https://github.com/MattSFT/Orky/tree/master/Hubot-Orky) adapter.
+* [Hubot](https://hubot.github.com/) with the [Hubot-Orky](https://github.com/OfficeDev/Orky/tree/master/Hubot-Orky) adapter.
 
-## [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) demo instance
+## [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) demo instance
 
-There is a deployed demo instance of [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) that anyone can talk to. Instructions for trying it in various [BotFramework](https://dev.botframework.com/) channels are below.
+There is a deployed demo instance of [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) that anyone can talk to. Instructions for trying it in various [BotFramework](https://dev.botframework.com/) channels are below.
 
 This demo bot has no guaranteed uptime, no guaranteed security, and deletes all registered OrkyBots frequently.
 
-### Try the [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) demo in [Skype](https://www.skype.com)
+### Try the [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) demo in [Skype](https://www.skype.com)
 
-You can quickly start a chat with the [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) demo instance by clicking [here](https://join.skype.com/bot/64fd7505-1b73-43bf-a26e-08a3a60a1a44).
+You can quickly start a chat with the [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) demo instance by clicking [here](https://join.skype.com/bot/64fd7505-1b73-43bf-a26e-08a3a60a1a44).
 
-### Try the [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) demo in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
+### Try the [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) demo in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
 
-You can try [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) by [sideloading](https://msdn.microsoft.com/en-us/microsoft-teams/sideload) this [package](https://github.com/MattSFT/Orky/raw/master/OrkyDemoManifest/OrkyDemoManifest.zip) into any one of your teams. Then you can talk to [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) in any channel of that team by typing @OrkyDemo.
+You can try [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) by [sideloading](https://msdn.microsoft.com/en-us/microsoft-teams/sideload) this [package](https://github.com/OfficeDev/Orky/raw/master/OrkyDemoManifest/OrkyDemo.zip) into any one of your teams. Then you can talk to [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) in any channel of that team by typing @OrkyDemo.
 
-## How to deploy your own [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) instance
+## How to deploy your own [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance
 
-This guide is written for an [Azure](https://azure.microsoft.com) oriented audience but should outline the general steps of creating an [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) instance.
+This guide is written for an [Azure](https://azure.microsoft.com) oriented audience but should outline the general steps of creating an [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance.
 
 ### Requirements
 
@@ -72,7 +74,7 @@ LOG_LEVEL="debug","info","warn", or "error" are the valid values in order. Defau
 BOT_RESPONSE_TIMEOUT=how long in milliseconds will your bot have to respond to an input message. Orky cuts off responses from bots after this duration. The default is 10000 (10 seconds).
 ```
 
-### Deploy your [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) instance to your [Azure](https://azure.microsoft.com) Web App
+### Deploy your [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance to your [Azure](https://azure.microsoft.com) Web App
 
 1. Fork this repository
 2. Go back to [Azure](portal.azure.com/).
@@ -84,7 +86,7 @@ BOT_RESPONSE_TIMEOUT=how long in milliseconds will your bot have to respond to a
 8. Choose master branch.
 9. Hit "OK".
 
-Azure should now pull down the code from github and run the deployment script to run your [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) instance. You can see the progress on the screen under "Deployment Options" in Azure. Deployment seems to usually take 5 - 10 minutes.
+Azure should now pull down the code from github and run the deployment script to run your [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance. You can see the progress on the screen under "Deployment Options" in Azure. Deployment seems to usually take 5 - 10 minutes.
 
 ### Make sure you can talk to your bot
 
@@ -93,9 +95,9 @@ Azure should now pull down the code from github and run the deployment script to
 3. Click 'Test' in the upper right.
 4. Type "help" and you should see your bot respond with the commands it supports. This may take a few tries until Azure wakes up your bot.
 
-## Install your [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) instance in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
+## Install your [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance in [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software)
 
-[Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software) is a great product to utilize your [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) instance in because of its Team-centric architecture. Here are instructions on how to get your [Orky](https://github.com/MattSFT/Orky/tree/master/Orky) instance into [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software).
+[Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software) is a great product to utilize your [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance in because of its Team-centric architecture. Here are instructions on how to get your [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance into [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software).
 
 ### Create an application package and sideload it
 
