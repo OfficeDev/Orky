@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 import {ArgumentNullException} from "../../Errors";
-import {ILogger} from "../../logging/Interfaces";
+import {ILogger} from "../../Logging";
 import BotConnectionBase from "./BotConnectionBase";
 
 export class BotConnectionV2 extends BotConnectionBase {
