@@ -14,8 +14,8 @@
     "coveralls": "nyc report --reporter=text-lcov | coveralls"
   },
   "engines": {
-    "node": "8.1.4",
-    "npm": "5.0.3"
+    "node": "8.11.1",
+    "npm": "5.6.0"
   },
   "author": "Microsoft Corporation",
   "license": "MIT",
