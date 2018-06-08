@@ -15,7 +15,7 @@ import {ArgumentNullException} from "./Errors";
 export class Orky {
   private _config: IConfig;
   private _logger: ILogger;
-  private _server: Server;
+  private _server: Server | null = null;
 
   constructor(config: IConfig, logger: ILogger) {
     if (!config) {
@@ -54,7 +54,10 @@ export class Orky {
 
     const app = Express();
     this._server = app.listen(this._config.ServerPort, () => {
-      const address = this._server.address();
+      let address = {address: "unknown"};
+      if (this._server) {
+        address = this._server.address();
+      }
       this._logger.info(`Orky is running on ${JSON.stringify(address)}`); 
     });
 
