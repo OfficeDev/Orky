@@ -49,7 +49,7 @@ set BOT_ID=<id>
 set BOT_SECRET=<secret>
 ./bin/hubot -a orky
 ```
-Note: ORKY_URI should just be set to the URL at which your Orky instance runs on (wihtout /socket.io or anything else at the end). For example, if you followed the guide to deploy Orky into an Azure App Service, then the Uri would simply be 'https://<orky-instance>.azurewebsites.net'
+Note: `ORKY_URI` should just be set to the URL at which your Orky instance runs on (wihtout `/socket.io` or anything else at the end). For example, if you followed the guide to deploy Orky into an Azure App Service, then `ORKY_URI` would simply be 'https://<orky-instance>.azurewebsites.net'
 
 5. You output should look like this.
 
