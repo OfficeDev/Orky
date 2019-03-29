@@ -37,7 +37,7 @@ npm install coffee-script --save
 ```
 4. Take the id and secret that [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) gave you and go back to your node-capable terminal. If you are using the `bash` shell, type:
 ```bash
-export ORKY_URI=<path to your Orky instance>
+export ORKY_URI=https://<orky-instance>.azurewebsites.net
 export BOT_ID=<id>
 export BOT_SECRET=<secret>
 ./bin/hubot -a orky
