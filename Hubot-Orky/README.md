@@ -16,7 +16,7 @@ If you are interested in deploying an instance of [Orky](https://github.com/Offi
 
 This guide can help you create your own [Hubot](https://hubot.github.com/) instance from scratch. You can then take this [Hubot](https://hubot.github.com/) instance and register it with an [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) instance and talk to it in any [BotFramework](https://dev.botframework.com/) supported channel (with some enhancements if you use the [Microsoft Teams](https://products.office.com/en-US/microsoft-teams/group-chat-software) channel).
 
-### Requirements:https://github.com/OfficeDev/Orky/blob/master/Hubot-Orky/README.md
+### Requirements:
 
 * [nodejs](https://nodejs.org)
 
@@ -37,7 +37,7 @@ npm install coffee-script --save
 ```
 4. Take the id and secret that [Orky](https://github.com/OfficeDev/Orky/tree/master/Orky) gave you and go back to your node-capable terminal. If you are using the `bash` shell, type:
 ```bash
-export ORKY_URI=<path to your Orky instance>
+export ORKY_URI=https://<orky-instance>.azurewebsites.net
 export BOT_ID=<id>
 export BOT_SECRET=<secret>
 ./bin/hubot -a orky
@@ -49,12 +49,13 @@ set BOT_ID=<id>
 set BOT_SECRET=<secret>
 ./bin/hubot -a orky
 ```
+Note: `ORKY_URI` should just be set to the URL at which your Orky instance runs on (wihtout `/socket.io` or anything else at the end). For example, if you followed the guide to deploy Orky into an Azure App Service, then `ORKY_URI` would simply be 'https://<orky-instance>.azurewebsites.net'
 
 5. You output should look like this.
 
 ```bash
 [Fri Aug 25 2017 10:13:09 GMT-0700 (Pacific Daylight Time)] INFO Created instance of Orky Adapter with config: {
-  "OrkyUri": "<YOUR ORKY INSTANCE URI",
+  "OrkyUri": "<YOUR ORKY INSTANCE URI>",
   "BotId": "<YOUR BOT ID>",
   "BotSecret": "<YOUR BOT SECRET>"
 }
