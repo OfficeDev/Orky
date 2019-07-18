@@ -1,9 +1,9 @@
 ---
 topic: sample
 products:
-- Office 365
+- office-365
 languages:
-- TypeScript
+- typescript
 extensions:
   contentType: tools
   createdDate: 8/22/2017 8:37:20 AM
