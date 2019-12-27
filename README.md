@@ -1,13 +1,3 @@
----
-topic: sample
-products:
-- office-365
-languages:
-- typescript
-extensions:
-  contentType: tools
-  createdDate: 8/22/2017 8:37:20 AM
----
 # Orky
 
 [![Build Status](https://travis-ci.org/OfficeDev/Orky.svg?branch=master)](https://travis-ci.org/OfficeDev/Orky)
