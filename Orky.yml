@@ -1,0 +1,10 @@
+page_type: sample
+products:
+  - office-365
+languages:
+  - typescript
+extensions:
+  contentType: tools
+  createdDate: '8/22/2017 8:37:20 AM'
+title: Orky
+description: You can use Orky to register your own local bot in Microsoft Teams and execute scripts from ANYWHERE! 
