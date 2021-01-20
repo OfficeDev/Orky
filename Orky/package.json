@@ -24,7 +24,7 @@
     "botbuilder": "^3.15.0",
     "crypto": "0.0.3",
     "express": "^4.16.3",
-    "socket.io": "^2.1.1",
+    "socket.io": "^2.4.0",
     "uuid": "^3.1.0"
   },
   "devDependencies": {
