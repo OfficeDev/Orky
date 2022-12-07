@@ -23,7 +23,7 @@
     "applicationinsights": "^0.21.0",
     "botbuilder": "^3.15.0",
     "crypto": "0.0.3",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "socket.io": "^2.1.1",
     "uuid": "^3.1.0"
   },
